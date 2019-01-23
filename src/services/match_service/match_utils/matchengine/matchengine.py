@@ -153,7 +153,9 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
                                                                                  self.validator.errors))
 
         # sort
+        print len(self.matches)
         trial_matches_df = self.sort_trial_matches()
+        print len(trial_matches_df.index)
 
         # todo add versioning
         if len(self.matches) > 0:
