@@ -184,5 +184,9 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
             return
 
         logging.info('Sorting trial matches')
+
+        print '---debug---'
+        print self.matches[0]
+        print
         sort = Sort(trial_matches=self.matches)
         return sort.add_sort_order()
