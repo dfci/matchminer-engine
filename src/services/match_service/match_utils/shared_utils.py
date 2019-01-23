@@ -46,6 +46,8 @@ class SharedUtils(object):
 
         logging.info('Adding trial matches to database')
 
+        print '---we out here---'
+
         if len(trial_matches_df.index) > 0:
             records = json.loads(trial_matches_df.T.to_json()).values()
             protocol_no = trial_matches_df[kn.tm_trial_protocol_no_col].tolist()[0]
