@@ -3,6 +3,7 @@ import logging
 
 from src.utilities import settings as s
 from src.utilities.utilities import get_db
+from src.data_store import key_names as kn
 
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s', )
 
@@ -47,5 +48,7 @@ class SharedUtils(object):
 
         if len(trial_matches_df.index) > 0:
             records = json.loads(trial_matches_df.T.to_json()).values()
-            self.db.trial_match.drop()
+            protocol_no = trial_matches_df[kn.tm_trial_protocol_no_col].tolist()[0]
+            query = {kn.tm_trial_protocol_no_col == protocol_no}
+            self.db.trial_match.remove(query)
             self.db.trial_match.insert_many(records)
