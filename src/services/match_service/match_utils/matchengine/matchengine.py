@@ -152,15 +152,15 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
                 raise ValueError('%s sample did not pass data validation: %s' % (sample[kn.sample_id_col],
                                                                                  self.validator.errors))
 
-        # sort
-        trial_matches_df = self.sort_trial_matches()
+        # todo sort
+        # trial_matches_df = self.sort_trial_matches()
 
         # todo add versioning
         if len(self.matches) > 0:
             query = {kn.tm_trial_protocol_no_col == self.trial_info['protocol_no']}
-            records = json.loads(trial_matches_df.T.to_json()).values()
+            # records = json.loads(trial_matches_df.T.to_json()).values()
             self.db[s.trial_match_collection_name].remove(query)
-            res = self.db[s.trial_match_collection_name].insert_many(records)
+            res = self.db[s.trial_match_collection_name].insert_many(self.matches)
             logging.info('%s | %s | %d trial matches added' % (
                 self.trial_info['protocol_no'],
                 format_match_tree_code(step_code=self.trial_info['step_code'],
