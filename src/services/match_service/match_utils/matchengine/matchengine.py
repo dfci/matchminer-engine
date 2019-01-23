@@ -157,7 +157,15 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
 
         # todo add versioning
         if len(self.matches) > 0:
-            query = {kn.tm_trial_protocol_no_col: self.trial_info['protocol_no']}
+            query = {
+                kn.tm_trial_protocol_no_col: self.trial_info['protocol_no'],
+                kn.mr_trial_step_code_col: self.trial_info['step_code']
+            }
+            if 'arm_code' in self.trial_info:
+                query[kn.mr_trial_arm_code_col] = self.trial_info['arm_code']
+            if 'dose_code' in self.trial_info:
+                query[kn.mr_trial_dose_code_col] = self.trial_info['dose_code']
+
             # records = json.loads(trial_matches_df.T.to_json()).values()
             self.db[s.trial_match_collection_name].remove(query)
             res = self.db[s.trial_match_collection_name].insert_many(self.matches)
