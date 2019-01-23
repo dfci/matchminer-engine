@@ -50,5 +50,5 @@ class SharedUtils(object):
             records = json.loads(trial_matches_df.T.to_json()).values()
             protocol_no = trial_matches_df[kn.tm_trial_protocol_no_col].tolist()[0]
             query = {kn.tm_trial_protocol_no_col == protocol_no}
-            self.db.trial_match.remove(query)
-            self.db.trial_match.insert_many(records)
+            self.db[s.trial_match_collection_name].remove(query)
+            self.db[s.trial_match_collection_name].insert_many(records)
