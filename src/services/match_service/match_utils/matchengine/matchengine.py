@@ -153,9 +153,7 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
                                                                                  self.validator.errors))
 
         # sort
-        print len(self.matches)
         trial_matches_df = self.sort_trial_matches()
-        print len(trial_matches_df.index)
 
         # todo add versioning
         if len(self.matches) > 0:
@@ -182,7 +180,7 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
 
         :return: {Pandas dataframe}
         """
-        if self.trial_matches is None:
+        if self.matches is None:
             return
 
         logging.info('Sorting trial matches')
