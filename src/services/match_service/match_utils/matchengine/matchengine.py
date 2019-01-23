@@ -1,3 +1,4 @@
+import json
 import logging
 import networkx as nx
 
@@ -147,19 +148,19 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
             sample[kn.mr_trial_dose_code_col] = self.trial_info['dose_code'] if 'dose_code' in self.trial_info else None
             sample[kn.mr_coordinating_center_col] = self.trial_info[s.trial_coordinating_center_col]
 
-            # print '--debug--'
-            # import json
-            # print
-            # print json.dumps(sample, sort_keys=True, indent=4, default=str)
-
             if not self.validator.validate_document(sample):
                 raise ValueError('%s sample did not pass data validation: %s' % (sample[kn.sample_id_col],
                                                                                  self.validator.errors))
 
+        # sort
+        trial_matches_df = self.sort_trial_matches()
+
         # todo add versioning
         if len(self.matches) > 0:
-            self.db[s.trial_match_collection_name].drop()
-            res = self.db[s.trial_match_collection_name].insert_many(self.matches)
+            query = {kn.tm_trial_protocol_no_col == self.trial_info['protocol_no']}
+            records = json.loads(trial_matches_df.T.to_json()).values()
+            self.db[s.trial_match_collection_name].remove(query)
+            res = self.db[s.trial_match_collection_name].insert_many(records)
             logging.info('%s | %s | %d trial matches added' % (
                 self.trial_info['protocol_no'],
                 format_match_tree_code(step_code=self.trial_info['step_code'],
@@ -183,5 +184,5 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
             return
 
         logging.info('Sorting trial matches')
-        sort = Sort(trial_matches=self.trial_matches)
+        sort = Sort(trial_matches=self.matches)
         return sort.add_sort_order()

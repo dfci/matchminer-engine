@@ -95,9 +95,5 @@ def main(args):
 
             # create trial matches records
             matchengine.create_trial_match_records()
-            trial_matches_df = matchengine.sort_trial_matches()
-
-            # save results
-            utils.add_trial_matches(trial_matches_df=trial_matches_df)
 
     logging.info('DONE')

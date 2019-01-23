@@ -3,7 +3,6 @@ import logging
 
 from src.utilities import settings as s
 from src.utilities.utilities import get_db
-from src.data_store import key_names as kn
 
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s', )
 
@@ -46,16 +45,7 @@ class SharedUtils(object):
 
         logging.info('Adding trial matches to database')
 
-        print '---we out here---'
-
         if len(trial_matches_df.index) > 0:
             records = json.loads(trial_matches_df.T.to_json()).values()
-            protocol_no = trial_matches_df[kn.tm_trial_protocol_no_col].tolist()[0]
-            print '---debug---'
-            print protocol_no
-            query = {kn.tm_trial_protocol_no_col == protocol_no}
-            print query
-            print
-
-            self.db[s.trial_match_collection_name].remove(query)
-            self.db[s.trial_match_collection_name].insert_many(records)
+            self.db.trial_match.drop()
+            self.db.trial_match.insert_many(records)
