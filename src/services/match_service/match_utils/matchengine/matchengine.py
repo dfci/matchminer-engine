@@ -114,7 +114,12 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
             node['query'][kn.sample_id_col] = {'$in': sample_ids}
 
         # perform query
+
+        print
+        print '---debug---'
+        print node['query']
         matches = list(self.db[s.sample_collection_name].find(node['query'], proj))
+        print len(matches)
 
         # add exclusion reasons to match results
         for match in matches:
@@ -154,7 +159,6 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
 
         # todo sort
         # trial_matches_df = self.sort_trial_matches()
-
 
         # todo add versioning
         if len(self.matches) > 0:
