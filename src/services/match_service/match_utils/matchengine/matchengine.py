@@ -87,9 +87,6 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
             # join child queries with "and"
             elif node['type'] == 'and' or node['type'] == 'or':
                 self.intersect_results(node=node, children=children)
-                print node_id
-                print len(node['matches'])
-                print
 
             else:
                 raise ValueError('match tree node must be of type "clinical", "genomic", "and", or "or')
