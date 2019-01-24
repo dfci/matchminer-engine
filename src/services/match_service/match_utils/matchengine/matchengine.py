@@ -87,6 +87,9 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
             # join child queries with "and"
             elif node['type'] == 'and' or node['type'] == 'or':
                 self.intersect_results(node=node, children=children)
+                print node_id
+                print len(node['matches'])
+                print
 
             else:
                 raise ValueError('match tree node must be of type "clinical", "genomic", "and", or "or')
@@ -114,12 +117,7 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
             node['query'][kn.sample_id_col] = {'$in': sample_ids}
 
         # perform query
-
-        print
-        print '---debug---'
-        print node['query']
         matches = list(self.db[s.sample_collection_name].find(node['query'], proj))
-        print len(matches)
 
         # add exclusion reasons to match results
         for match in matches:
