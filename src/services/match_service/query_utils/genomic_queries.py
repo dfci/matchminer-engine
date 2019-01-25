@@ -87,9 +87,11 @@ class GenomicQueries(QueryUtils, GenomicUtils):
         """
         exclude_query = {
             self.variant_category_dict[variant_category]: {
-                '$elemMatch': {
-                    self.hugo_symbol_key: {'$eq': gene_name},
-                    self.variant_type_col_dict[variant_category]: {'$ne': variant_val}
+                '$not': {
+                    '$elemMatch': {
+                        self.hugo_symbol_key: {'$eq': gene_name},
+                        self.variant_type_col_dict[variant_category]: {'$eq': variant_val}
+                    }
                 }
             }
         }
