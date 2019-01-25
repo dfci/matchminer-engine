@@ -1,5 +1,6 @@
 import datetime as dt
 
+from src.utilities import settings as s
 from src.data_store import key_names as kn
 from tests.test_load_service import mutation_missense_data, mutation_nonsense_data, cnv_heterozygous_del_data, \
     sv_data, pertinent_undercovered_data, pertinent_negative_data, pertinent_negative_v2_data, \
@@ -88,7 +89,10 @@ samples_data = {
     kn.consent_17000_col: None,
 
     # wild-type information
-    kn.wt_genes_col: ['BRAF'],
+    kn.wt_genes_col: [{
+        kn.variant_category_col: s.variant_category_wt_val,
+        kn.hugo_symbol_col: 'BRAF',
+    }],
 
     # variant information
     kn.mutation_list_col: [valid_mutation_nonsense_data, valid_mutation_missense_data],

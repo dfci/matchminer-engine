@@ -91,7 +91,7 @@ pertinent_negative_data = {
     kn.panel_col: 'GLIOMA',
     kn.codon_col: 466,
     kn.show_codon_col: True,
-    kn.coverage_col: None,
+    kn.lc_coverage_col: None,
     kn.low_coverage_exon_col: 11,
 }
 pertinent_negative_v2_data = {
@@ -101,7 +101,7 @@ pertinent_negative_v2_data = {
     kn.panel_col: 'THORACIC',
     kn.codon_col: 709,
     kn.show_codon_col: True,
-    kn.coverage_col: None,
+    kn.lc_coverage_col: None,
     kn.low_coverage_exon_col: 18,
 }
 
@@ -112,7 +112,7 @@ pertinent_undercovered_data = {
     kn.panel_col: 'GLIOMA',
     kn.codon_col: None,
     kn.show_exon_col: True,
-    kn.coverage_col: 11.6923,
+    kn.lc_coverage_col: 11.6923,
     kn.low_coverage_exon_col: 3,
 }
 
@@ -123,6 +123,6 @@ additional_undercovered_data = {
     kn.panel_col: 'GLIOMA',
     kn.codon_col: None,
     kn.show_exon_col: True,
-    kn.coverage_col: 11.6923,
+    kn.lc_coverage_col: 11.6923,
     kn.low_coverage_exon_col: 18,
 }
