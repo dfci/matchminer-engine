@@ -56,7 +56,7 @@ class TestVariantsUtils(unittest.TestCase):
         sv_list = sorted(self.v.sample_obj[kn.sv_list_col][0].keys())
         assert mutation_list == sorted(dm.mutations_schema.keys()), mutation_list
         assert cnv_list == sorted(dm.cnvs_schema.keys()), cnv_list
-        assert sv_list == sorted(dm.svs_schema.keys()), sv_list
+        assert sv_list == sorted(['structuralVariantComment', 'variantCategory']), sv_list
 
     def test_split_mmr_status(self):
 
@@ -92,10 +92,10 @@ class TestVariantsUtils(unittest.TestCase):
 
         wt_gene_list = self.v.sample_obj[kn.wt_genes_col]
         self.v.determine_wildtype(data=wt1_data)
-        assert sorted(wt_gene_list) == sorted(['BRAF']), sorted(wt_gene_list)
+        assert sorted([i[kn.hugo_symbol_col] for i in wt_gene_list]) == sorted(['BRAF']), sorted(wt_gene_list)
 
         self.v.determine_wildtype(data=wt2_data)
-        assert sorted(wt_gene_list) == sorted(['BRAF', 'EGFR']), sorted(wt_gene_list)
+        assert sorted([i[kn.hugo_symbol_col] for i in wt_gene_list]) == sorted(['BRAF', 'EGFR']), sorted(wt_gene_list)
 
         # catch missing data
         return_value_error = False
