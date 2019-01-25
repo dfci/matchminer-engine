@@ -51,7 +51,6 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
         assert self.query['$and'][0].keys() == [kn.birth_date_col]
         assert self.query['$and'][0][kn.birth_date_col].keys() == ['$lte']
         assert self.proj_info[0] == {s.mt_age: '>=18'}
-        assert node[kn.mr_diagnosis_level_col] == 'specific'
 
     def test_parse_gender(self):
 
@@ -59,7 +58,6 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
         self.a._parse_gender(node=node, query=self.query, proj_info=self.proj_info)
         assert self.query == {'$and': [{kn.gender_col: 'Female'}]}
         assert self.proj_info == [{s.mt_gender: 'Female'}]
-        assert node[kn.mr_diagnosis_level_col] == 'specific'
 
     def test_parse_variant_category(self):
 

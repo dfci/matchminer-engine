@@ -366,7 +366,7 @@ class TestMatchEngine(TestQueryUtilitiesShared):
 
         trial_matches = self._findall(query={},
                                       proj={k: 1 for k in trial_matches_schema.keys()},
-                                       table=s.trial_match_collection_name)
+                                      table=s.trial_match_collection_name)
         self._print(trial_matches)
         for tm in trial_matches:
             assert tm[kn.tm_trial_protocol_no_col] == '00-000'

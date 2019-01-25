@@ -8,7 +8,7 @@ class TestSharedUtils(TestQueryUtilitiesShared):
     def setUp(self):
         super(TestSharedUtils, self).setUp()
 
-        self.s = SharedUtils()
+        self.s = SharedUtils(mongo_uri=s.MONGO_URI, mongo_dbname=s.MONGO_DBNAME)
         self.db.trial.drop()
         self.db.trial_match.drop()
 

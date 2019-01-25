@@ -62,8 +62,8 @@ class TestSort(TestQueryUtilitiesShared):
         s._prep_trial_matches()
         assert s.trial_matches_df['has_mut'].tolist() == [True, False, False, False]
         assert s.trial_matches_df['has_cnv'].tolist() == [False, True, False, False]
-        assert s.trial_matches_df['has_sv'].tolist() == [False, False, True, None]
-        assert s.trial_matches_df['has_wt'].tolist() == [None, None, None, True]
+        assert s.trial_matches_df['has_sv'].tolist() == [False, False, True, False]
+        assert s.trial_matches_df['has_wt'].tolist() == [False, False, False, True]
         assert sorted(s.all_sample_ids) == ['DEV-01', 'DEV-02', 'DEV-03']
         assert s.f_alive is not None
         assert s.f_open is not None
