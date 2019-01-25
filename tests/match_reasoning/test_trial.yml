@@ -1,0 +1,31 @@
+protocol_no: 00-000
+treatment_list:
+  step:
+  - arm:
+    - arm_code: '0'
+      arm_description: '0'
+      arm_internal_id: 0
+      arm_suspended: N
+      dose_level: []
+      match:
+      - and:
+        - or:
+          - and:
+            - genomic:
+                hugo_symbol: MYC
+                variant_category: Copy Number Variation
+            - genomic:
+                hugo_symbol: RSPO2
+                variant_category: Structural Variation
+            - genomic:
+                hugo_symbol: XXX
+                variant_category: '!Mutation'
+          - genomic:
+              hugo_symbol: TP53
+              protein_change: p.E286K
+              variant_category: Mutation
+        - clinical:
+            oncotree_primary_diagnosis: Colorectal Adenocarcinoma
+    step_code: '0'
+    step_description: '0'
+    step_internal_id: 0

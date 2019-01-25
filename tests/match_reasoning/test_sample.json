@@ -1,0 +1,18 @@
+{
+  "mrn": "01",
+  "sampleId": "BL-XX-01",
+  "oncotreePrimaryDiagnosisName": "Colorectal Adenocarcinoma",
+  "vitalStatus": "alive",
+  "mutations": [
+    {"hugoSymbol": "TP53", "proteinChange": "p.E286K"}
+  ],
+  "cnvs": [
+    {"hugoSymbol": "MYC"}
+  ],
+  "svs": [
+    {
+      "variantCategory" : "SV",
+      "structuralVariantComment" : "RSPO3"
+    }
+  ]
+}
