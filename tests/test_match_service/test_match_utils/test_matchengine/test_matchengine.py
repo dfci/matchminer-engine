@@ -13,6 +13,9 @@ class TestMatchEngine(TestQueryUtilitiesShared):
     def setUp(self):
         super(TestMatchEngine, self).setUp()
 
+        self.db.testSamples.drop()
+        self.db[s.sample_collection_name].drop()
+        self.db[s.trial_match_collection_name].drop()
         self.db.testSamples.insert_many(self.test_cases)
 
     def tearDown(self):
@@ -222,7 +225,7 @@ class TestMatchEngine(TestQueryUtilitiesShared):
         print '\n---OR---'
         self._print(me.matches)
 
-        me = MatchEngine(match_tree=self.complex_or_tree, trial_info={})
+        me = MatchEngine(match_tree=self.complex_or_tree, trial_info={}, mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
         me.convert_match_tree_to_digraph()
         me.traverse_match_tree()
         print '\n---COMPLEX OR---'
@@ -254,7 +257,7 @@ class TestMatchEngine(TestQueryUtilitiesShared):
                 kn.oncotree_primary_diagnosis_name_col: 1
             }
         }
-        me = MatchEngine(match_tree=None, trial_info=None)
+        me = MatchEngine(match_tree=None, trial_info=None, mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
         m = me._search_for_matching_records(node=node)
         assert m == [{
             kn.sample_id_col: 'TEST-SAMPLE-LUNG',

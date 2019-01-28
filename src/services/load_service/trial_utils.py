@@ -2,8 +2,6 @@ import os
 import yaml
 import subprocess
 
-from src.utilities import settings as s
-
 
 class TrialUtils:
 

@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s', )
 
 class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
 
-    def __init__(self, match_tree, trial_info):
+    def __init__(self, match_tree, trial_info, mongo_uri=None, mongo_dbname=None):
         AssessNodeUtils.__init__(self)
         IntersectResultsUtils.__init__(self)
 
@@ -25,7 +25,7 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
         self.diagnosis_level = None
         self.match_tree_nx = None
         self.sample_ids = None
-        self.db = get_db()
+        self.db = get_db(mongo_uri=mongo_uri, mongo_dbname=mongo_dbname)
 
         self.matches = None
         self.trial_matches = None
