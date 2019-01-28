@@ -151,7 +151,7 @@ class TestMatchEngine(TestQueryUtilitiesShared):
         self.db[s.sample_collection_name].insert_many([doc1, doc2, doc3, doc4, doc5, doc6])
 
         # find matches
-        me = MatchEngine(match_tree=self.complex_match_tree, trial_info={})
+        me = MatchEngine(match_tree=self.complex_match_tree, trial_info={}, mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
         me.convert_match_tree_to_digraph()
         me.traverse_match_tree()
         self._print(me.matches)
@@ -213,13 +213,13 @@ class TestMatchEngine(TestQueryUtilitiesShared):
         self.db[s.sample_collection_name].insert_many([doc1, doc2, doc3])
 
         # find matches
-        me = MatchEngine(match_tree=self.simple_and_tree, trial_info={})
+        me = MatchEngine(match_tree=self.simple_and_tree, trial_info={}, mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
         me.convert_match_tree_to_digraph()
         me.traverse_match_tree()
         print '---AND---'
         self._print(me.matches)
 
-        me = MatchEngine(match_tree=self.simple_or_tree, trial_info={})
+        me = MatchEngine(match_tree=self.simple_or_tree, trial_info={}, mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
         me.convert_match_tree_to_digraph()
         me.traverse_match_tree()
         print '\n---OR---'
@@ -233,7 +233,7 @@ class TestMatchEngine(TestQueryUtilitiesShared):
 
     def test_convert_match_tree_to_digraph(self):
 
-        me = MatchEngine(match_tree=self.simple_mutation_match_tree, trial_info={})
+        me = MatchEngine(match_tree=self.simple_mutation_match_tree, trial_info={}, mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
         me.convert_match_tree_to_digraph()
         assert me.match_tree_nx is not None
         assert me.match_tree_nx.node[1] == {'type': 'and'}
@@ -270,7 +270,7 @@ class TestMatchEngine(TestQueryUtilitiesShared):
             'query': {kn.oncotree_primary_diagnosis_name_col: {'$ne': 'Lung'}},
             kn.clinical_exclusion_reasons_col: {kn.oncotree_primary_diagnosis_name_col: 'Lung'}
         }
-        me = MatchEngine(match_tree=None, trial_info=None)
+        me = MatchEngine(match_tree=None, trial_info=None, mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
         m = me._search_for_matching_records(node=node)
         assert m[0] == {
             kn.sample_id_col: 'TEST-SAMPLE-COLON',
@@ -290,7 +290,7 @@ class TestMatchEngine(TestQueryUtilitiesShared):
                 kn.mutation_list_col: {'$elemMatch': {kn.hugo_symbol_col: 'BRAF'}}
             }
         }
-        me = MatchEngine(match_tree=None, trial_info=None)
+        me = MatchEngine(match_tree=None, trial_info=None, mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
         m = me._search_for_matching_records(node=node)
         assert m == [{
             kn.sample_id_col: 'TEST-SAMPLE-BRAF-V600E',
@@ -313,7 +313,7 @@ class TestMatchEngine(TestQueryUtilitiesShared):
                 kn.mutation_list_col: s.variant_category_mutation_val
             }
         }
-        me = MatchEngine(match_tree=None, trial_info=None)
+        me = MatchEngine(match_tree=None, trial_info=None, mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
         m = me._search_for_matching_records(node=node)
         assert m[1] == {
             kn.sample_id_col: 'TEST-SAMPLE-COLON',
@@ -332,7 +332,7 @@ class TestMatchEngine(TestQueryUtilitiesShared):
             'step_code': 'STEP CODE',
             'arm_code': None
         }
-        me = MatchEngine(match_tree=None, trial_info=trial_info)
+        me = MatchEngine(match_tree=None, trial_info=trial_info, mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
         me.matches = [
             {
                 kn.genomic_exclusion_reasons_col: [
