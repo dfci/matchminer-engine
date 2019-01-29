@@ -85,10 +85,11 @@ class TrialUtils:
         accrual_status = self.accrual_status
         accrual_status_dict = {True: 'open', False: 'closed'}
         accrual_suspended_key_dict = {'step': 'step', 'arm': 'arm', 'dose': 'level'}
-        for key in ['step', 'arm', 'dose']:
-            suspended_key = '%s_suspended' % accrual_suspended_key_dict[key]
-            if key in kwargs and suspended_key in kwargs[key]:
-                accrual_status = accrual_status_dict[kwargs[key][suspended_key].lower() == 'n']
+        if accrual_status != 'closed':
+            for key in ['step', 'arm', 'dose']:
+                suspended_key = '%s_suspended' % accrual_suspended_key_dict[key]
+                if key in kwargs and suspended_key in kwargs[key]:
+                    accrual_status = accrual_status_dict[kwargs[key][suspended_key].lower() == 'n']
 
         return {
             'protocol_no': self.trial[s.trial_protocol_no_col],
