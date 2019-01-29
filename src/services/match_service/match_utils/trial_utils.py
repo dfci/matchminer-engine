@@ -50,7 +50,13 @@ class TrialUtils:
             # ARM #
             for arm in step[s.trial_arm_col]:
                 if s.trial_match_tree_col in arm:
+                    print '----debug----'
+
                     trial_info = self._get_trial_info(level=s.trial_arm_col, step=step, arm=arm)
+
+
+                    print trial_info
+
                     matchengine = MatchEngine(match_tree=arm[s.trial_match_tree_col][0],
                                               trial_info=trial_info,
                                               mongo_uri=self.mongo_uri,
@@ -81,9 +87,16 @@ class TrialUtils:
 
         :return: {dict}
         """
+
+        accrual_status = self.accrual_status
+        accrual_status_dict = {True: 'open', False: 'closed'}
+        for key in ['step', 'arm', 'dose']:
+            if key in kwargs and 'arm_suspended' in kwargs[key]:
+                accrual_status = accrual_status_dict[kwargs[key]['arm_suspended'].lower() == 'n']
+
         return {
             'protocol_no': self.trial[s.trial_protocol_no_col],
-            'accrual_status': self.accrual_status,
+            'accrual_status': accrual_status,
             'level': kwargs['level'],
             'step_code': kwargs['step'][s.trial_step_code_col] if 'step' in kwargs else None,
             'arm_code': kwargs['arm'][s.trial_arm_code_col] if 'arm' in kwargs else None,
