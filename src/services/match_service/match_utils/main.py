@@ -80,7 +80,7 @@ def main(args):
     for trial in trials:
 
         # parse trial document for all match trees
-        trial_utils = TrialUtils(trial=trial)
+        trial_utils = TrialUtils(trial=trial, mongo_uri=args.mongo_uri, mongo_dbname=args.mongo_dbname)
         matchengines = trial_utils.parse_match_trees_from_trial()
         for matchengine in matchengines:
 

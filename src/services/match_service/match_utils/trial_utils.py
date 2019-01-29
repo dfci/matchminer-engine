@@ -9,8 +9,10 @@ logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s', )
 
 class TrialUtils:
 
-    def __init__(self, trial):
+    def __init__(self, trial, mongo_uri=None, mongo_dbname=None):
         self.trial = trial
+        self.mongo_uri = mongo_uri
+        self.mongo_dbname = mongo_dbname
         self.accrual_status = s.match_accrual_status_open_val
 
     def parse_match_trees_from_trial(self):
@@ -39,21 +41,30 @@ class TrialUtils:
         for step in self.trial[s.trial_treatment_list_col][s.trial_step_col]:
             if s.trial_match_tree_col in step:
                 trial_info = self._get_trial_info(level=s.trial_step_col, step=step)
-                matchengine = MatchEngine(match_tree=step[s.trial_match_tree_col][0], trial_info=trial_info)
+                matchengine = MatchEngine(match_tree=step[s.trial_match_tree_col][0],
+                                          trial_info=trial_info,
+                                          mongo_uri=self.mongo_uri,
+                                          mongo_dbname=self.mongo_dbname)
                 match_trees.append(matchengine)
 
             # ARM #
             for arm in step[s.trial_arm_col]:
                 if s.trial_match_tree_col in arm:
                     trial_info = self._get_trial_info(level=s.trial_arm_col, step=step, arm=arm)
-                    matchengine = MatchEngine(match_tree=arm[s.trial_match_tree_col][0], trial_info=trial_info)
+                    matchengine = MatchEngine(match_tree=arm[s.trial_match_tree_col][0],
+                                              trial_info=trial_info,
+                                              mongo_uri=self.mongo_uri,
+                                              mongo_dbname=self.mongo_dbname)
                     match_trees.append(matchengine)
 
                 # DOSE #
                 for dose in arm[s.trial_dose_col]:
                     if s.trial_match_tree_col in dose:
                         trial_info = self._get_trial_info(level=s.trial_dose_col, step=step, arm=arm, dose=dose)
-                        matchengine = MatchEngine(match_tree=dose[s.trial_match_tree_col][0], trial_info=trial_info)
+                        matchengine = MatchEngine(match_tree=dose[s.trial_match_tree_col][0],
+                                                  trial_info=trial_info,
+                                                  mongo_uri=self.mongo_uri,
+                                                  mongo_dbname=self.mongo_dbname)
                         match_trees.append(matchengine)
 
         return match_trees
