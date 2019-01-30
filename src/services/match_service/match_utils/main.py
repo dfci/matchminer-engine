@@ -3,6 +3,7 @@ import subprocess
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 from src.utilities import settings as s
+from src.data_store import key_names as kn
 from src.data_store.trial_matches_data_model import trial_matches_schema
 from src.services.match_service.match_utils.shared_utils import SharedUtils
 from src.services.match_service.match_utils.trial_utils import TrialUtils
@@ -98,5 +99,10 @@ def main(args):
             matchengine.create_trial_match_records()
 
     # sort
+    if sample_ids is None:
+        query = {}
+    else:
+        query = {kn.sample_id_col: {'$in': sample_ids}}
+
     sort(query=query, mongo_uri=args.mongo_uri, mongo_dbname=args.mongo_dbname)
     logging.info('DONE')

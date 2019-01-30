@@ -14,7 +14,7 @@ class TestTrialUtils(TestQueryUtilitiesShared):
     def test_parse_match_trees_from_trial(self):
 
         # open trial with one step-level match tree
-        t = TrialUtils(trial=self.load_trial('10-113'))
+        t = TrialUtils(trial=self.load_trial('10-113'), mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
         match_trees = t.parse_match_trees_from_trial()
         assert t.accrual_status == s.match_accrual_status_open_val
         assert len(match_trees) == 1, len(match_trees)
@@ -27,7 +27,7 @@ class TestTrialUtils(TestQueryUtilitiesShared):
         assert match_trees[0].trial_info[s.trial_coordinating_center_col] == 'unknown'
 
         # closed trial with one arm-level match tree
-        t = TrialUtils(trial=self.load_trial('10-114'))
+        t = TrialUtils(trial=self.load_trial('10-114'), mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
         match_trees = t.parse_match_trees_from_trial()
         assert t.accrual_status == s.match_accrual_status_closed_val
         assert len(match_trees) == 1, len(match_trees)
@@ -40,7 +40,7 @@ class TestTrialUtils(TestQueryUtilitiesShared):
         assert match_trees[0].trial_info[s.trial_coordinating_center_col] == 'DFCI'
 
         # unspecified accrual status trial with two dose-level match trees
-        t = TrialUtils(trial=self.load_trial('00-005'))
+        t = TrialUtils(trial=self.load_trial('00-005'), mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
         match_trees = t.parse_match_trees_from_trial()
         assert t.accrual_status == s.match_accrual_status_open_val
         assert len(match_trees) == 2, len(match_trees)
