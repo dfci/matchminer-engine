@@ -99,6 +99,4 @@ def main(args):
 
     # sort
     sort(query=query, mongo_uri=args.mongo_uri, mongo_dbname=args.mongo_dbname)
-
-
     logging.info('DONE')
