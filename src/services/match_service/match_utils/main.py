@@ -6,6 +6,7 @@ from src.utilities import settings as s
 from src.data_store.trial_matches_data_model import trial_matches_schema
 from src.services.match_service.match_utils.shared_utils import SharedUtils
 from src.services.match_service.match_utils.trial_utils import TrialUtils
+from src.services.match_service.match_utils.sort import main as sort
 
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s', )
 
@@ -95,5 +96,9 @@ def main(args):
 
             # create trial matches records
             matchengine.create_trial_match_records()
+
+    # sort
+    sort(query=query, mongo_uri=args.mongo_uri, mongo_dbname=args.mongo_dbname)
+
 
     logging.info('DONE')

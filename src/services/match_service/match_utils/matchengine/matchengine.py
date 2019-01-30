@@ -5,7 +5,6 @@ import networkx as nx
 from src.utilities import settings as s
 from src.data_store import key_names as kn
 from src.data_store.validator import SamplesValidator
-from src.services.match_service.match_utils.sort import Sort
 from src.utilities.utilities import get_db, format_match_tree_code
 from src.data_store.trial_matches_data_model import trial_matches_schema
 from src.services.match_service.match_utils.matchengine.assess_node_utils import AssessNodeUtils
@@ -155,10 +154,6 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
             if not self.validator.validate_document(sample):
                 raise ValueError('%s sample did not pass data validation: %s' % (sample[kn.sample_id_col],
                                                                                  self.validator.errors))
-
-        # todo sort
-        # trial_matches_df = self.sort_trial_matches()
-
         # todo add versioning
         if len(self.matches) > 0:
             query = {
@@ -185,20 +180,3 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
                 format_match_tree_code(step_code=self.trial_info['step_code'],
                                        arm_code=self.trial_info['arm_code'] if 'arm_code' in self.trial_info else None,
                                        dose_code=self.trial_info['dose_code'] if 'dose_code' in self.trial_info else None)))
-
-    def sort_trial_matches(self):
-        """
-        Sort trial matches.
-
-        :return: {Pandas dataframe}
-        """
-        if self.matches is None:
-            return
-
-        logging.info('Sorting trial matches')
-
-        print '---debug---'
-        print self.matches[0]
-        print
-        sort = Sort(trial_matches=self.matches)
-        return sort.add_sort_order()

@@ -1,12 +1,37 @@
 """Copyright 2016 Dana-Farber Cancer Institute"""
-
+import json
 import logging
 import pandas as pd
 
 from src.utilities import settings as s
 from src.data_store import key_names as kn
+from src.utilities.utilities import get_db
 
 logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(message)s', )
+
+
+def main(query, mongo_uri=None, mongo_dbname=None):
+
+    db = get_db(mongo_uri=mongo_uri, mongo_dbname=mongo_dbname)
+    if query is None:
+        query = {}
+
+    # get trial_matches
+    trial_matches = list(db[s.trial_match_collection_name].find(query))
+
+    # sort them
+    if trial_matches is None or len(trial_matches) == 0:
+        return
+
+    logging.info('Sorting trial matches')
+    sort = Sort(trial_matches=trial_matches)
+    trial_match_df = sort.add_sort_order()
+
+    # save them
+    for idx, row in trial_match_df.iterrows():
+        query = {'_id': row['_id']}
+        update = {'$set': {kn.tm_sort_order_col: row['sort_order']}}
+        db[s.trial_match_collection_name].update(query, update)
 
 
 class Sort:
@@ -28,10 +53,10 @@ class Sort:
         """
         self.trial_matches_df = pd.DataFrame.from_dict(self.trial_matches)
 
-        self.trial_matches_df['has_mut'] = self.trial_matches_df[kn.mutation_list_col].apply(has_vc)
-        self.trial_matches_df['has_cnv'] = self.trial_matches_df[kn.cnv_list_col].apply(has_vc)
-        self.trial_matches_df['has_sv'] = self.trial_matches_df[kn.sv_list_col].apply(has_vc)
-        self.trial_matches_df['has_wt'] = self.trial_matches_df[kn.wt_genes_col].apply(has_vc)
+        self.trial_matches_df['has_mut'] = self.trial_matches_df[kn.mutation_list_col].apply(has_vc) if kn.mutation_list_col in self.trial_matches else False
+        self.trial_matches_df['has_cnv'] = self.trial_matches_df[kn.cnv_list_col].apply(has_vc) if kn.cnv_list_col in self.trial_matches else False
+        self.trial_matches_df['has_sv'] = self.trial_matches_df[kn.sv_list_col].apply(has_vc) if kn.sv_list_col in self.trial_matches else False
+        self.trial_matches_df['has_wt'] = self.trial_matches_df[kn.wt_genes_col].apply(has_vc) if kn.wt_genes_col in self.trial_matches else False
 
         self.all_sample_ids = self.trial_matches_df[kn.sample_id_col].unique().tolist()
         self.f_alive = (self.trial_matches_df[kn.vital_status_col] == 'alive')
