@@ -36,7 +36,7 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
         }
         self.exclusion_key = 'ne'
         self.proj_keys = [kn.hugo_symbol_col, kn.protein_change_col, kn.variant_class_col, kn.cnv_call_col,
-                         kn.ref_residue_col, kn.transcript_exon_col, kn.sv_comment_col]
+                         kn.ref_residue_col, kn.transcript_exon_col, kn.sv_comment_col, kn.tier_col]
 
     def create_clinical_proj(self, include=True, **kwargs):
         """

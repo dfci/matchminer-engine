@@ -20,6 +20,7 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
             '%s.%s' % (kn.mutation_list_col, kn.ref_residue_col): 1,
             '%s.%s' % (kn.mutation_list_col, kn.transcript_exon_col): 1,
             '%s.%s' % (kn.mutation_list_col, kn.sv_comment_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.tier_col): 1,
         }
         self.standard_genomic_cnv_proj = {
             '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
@@ -30,6 +31,7 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
             '%s.%s' % (kn.cnv_list_col, kn.ref_residue_col): 1,
             '%s.%s' % (kn.cnv_list_col, kn.transcript_exon_col): 1,
             '%s.%s' % (kn.cnv_list_col, kn.sv_comment_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.tier_col): 1,
         }
         self.standard_genomic_sv_proj = {
             '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
@@ -40,6 +42,7 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
             '%s.%s' % (kn.sv_list_col, kn.ref_residue_col): 1,
             '%s.%s' % (kn.sv_list_col, kn.transcript_exon_col): 1,
             '%s.%s' % (kn.sv_list_col, kn.sv_comment_col): 1,
+            '%s.%s' % (kn.sv_list_col, kn.tier_col): 1,
         }
         self.standard_genomic_wt_proj = {
             '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
@@ -50,6 +53,7 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
             '%s.%s' % (kn.wt_genes_col, kn.ref_residue_col): 1,
             '%s.%s' % (kn.wt_genes_col, kn.transcript_exon_col): 1,
             '%s.%s' % (kn.wt_genes_col, kn.sv_comment_col): 1,
+            '%s.%s' % (kn.wt_genes_col, kn.tier_col): 1,
         }
 
     def tearDown(self):
@@ -555,55 +559,56 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
             self.test_case_braf_generic_cnv
         ])
 
-        # BRAF Any Variation (inclusion)
-        q1 = self.gq.create_any_variant_query(gene_name='BRAF', include=True)
-        res1 = self._findalls(q1)
-        self._print(q1)
-        assert res1 == ['TEST-SAMPLE-BRAF-GENERIC-CNV', 'TEST-SAMPLE-BRAF-V600E', 'TEST-SAMPLE-ERBB2-V600E']
-
-        # BRAF Any Variation (exclusion)
-        q2 = self.gq.create_any_variant_query(gene_name='BRAF', include=False)
-        res2 = self._findalls(q2)
-        self._print(q2)
-        assert res2 == ['TEST-SAMPLE-NO-MUTATION', 'TEST-SAMPLE-TP53-R278W']
-
-        # projections
-        p1, mr1 = self.p.create_any_variant_proj(gene_name='BRAF', include=True, query=q1)
-        p2, mr2 = self.p.create_any_variant_proj(gene_name='BRAF', include=False, query=q1)
-        assert p1 == {
-            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
-            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 1,
-            '%s.%s' % (kn.mutation_list_col, kn.protein_change_col): 1,
-            '%s.%s' % (kn.mutation_list_col, kn.variant_class_col): 1,
-            '%s.%s' % (kn.mutation_list_col, kn.cnv_call_col): 1,
-            '%s.%s' % (kn.mutation_list_col, kn.ref_residue_col): 1,
-            '%s.%s' % (kn.mutation_list_col, kn.transcript_exon_col): 1,
-            '%s.%s' % (kn.mutation_list_col, kn.sv_comment_col): 1,
-            '%s.%s' % (kn.cnv_list_col, kn.hugo_symbol_col): 1,
-            '%s.%s' % (kn.cnv_list_col, kn.protein_change_col): 1,
-            '%s.%s' % (kn.cnv_list_col, kn.variant_class_col): 1,
-            '%s.%s' % (kn.cnv_list_col, kn.cnv_call_col): 1,
-            '%s.%s' % (kn.cnv_list_col, kn.ref_residue_col): 1,
-            '%s.%s' % (kn.cnv_list_col, kn.sv_comment_col): 1,
-            '%s.%s' % (kn.cnv_list_col, kn.transcript_exon_col): 1,
-        }, p1
-        assert mr1 == {
-            '$or': [
-                {'%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF'},
-                {'%s.%s' % (kn.cnv_list_col, kn.hugo_symbol_col): 'BRAF'}
-            ]
-        }, mr1
-        self._print(p2)
-        assert p2 == {
-            '$and': [
-                {self.p.hugo_symbol_key: 'BRAF', kn.variant_category_col: s.variant_category_mutation_val},
-                {self.p.hugo_symbol_key: 'BRAF', kn.variant_category_col: s.variant_category_cnv_val}
-            ]
-        }, p2
-        assert mr2 is None, mr2
-
-        # clean up
-        self.db.testSamples.drop()
+        # todo deprecated
+        # # BRAF Any Variation (inclusion)
+        # q1 = self.gq.create_any_variant_query(gene_name='BRAF', include=True)
+        # res1 = self._findalls(q1)
+        # self._print(q1)
+        # assert res1 == ['TEST-SAMPLE-BRAF-GENERIC-CNV', 'TEST-SAMPLE-BRAF-V600E', 'TEST-SAMPLE-ERBB2-V600E']
+        #
+        # # BRAF Any Variation (exclusion)
+        # q2 = self.gq.create_any_variant_query(gene_name='BRAF', include=False)
+        # res2 = self._findalls(q2)
+        # self._print(q2)
+        # assert res2 == ['TEST-SAMPLE-NO-MUTATION', 'TEST-SAMPLE-TP53-R278W']
+        #
+        # # projections
+        # p1, mr1 = self.p.create_any_variant_proj(gene_name='BRAF', include=True, query=q1)
+        # p2, mr2 = self.p.create_any_variant_proj(gene_name='BRAF', include=False, query=q1)
+        # assert p1 == {
+        #     '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+        #     '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 1,
+        #     '%s.%s' % (kn.mutation_list_col, kn.protein_change_col): 1,
+        #     '%s.%s' % (kn.mutation_list_col, kn.variant_class_col): 1,
+        #     '%s.%s' % (kn.mutation_list_col, kn.cnv_call_col): 1,
+        #     '%s.%s' % (kn.mutation_list_col, kn.ref_residue_col): 1,
+        #     '%s.%s' % (kn.mutation_list_col, kn.transcript_exon_col): 1,
+        #     '%s.%s' % (kn.mutation_list_col, kn.sv_comment_col): 1,
+        #     '%s.%s' % (kn.cnv_list_col, kn.hugo_symbol_col): 1,
+        #     '%s.%s' % (kn.cnv_list_col, kn.protein_change_col): 1,
+        #     '%s.%s' % (kn.cnv_list_col, kn.variant_class_col): 1,
+        #     '%s.%s' % (kn.cnv_list_col, kn.cnv_call_col): 1,
+        #     '%s.%s' % (kn.cnv_list_col, kn.ref_residue_col): 1,
+        #     '%s.%s' % (kn.cnv_list_col, kn.sv_comment_col): 1,
+        #     '%s.%s' % (kn.cnv_list_col, kn.transcript_exon_col): 1,
+        # }, p1
+        # assert mr1 == {
+        #     '$or': [
+        #         {'%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF'},
+        #         {'%s.%s' % (kn.cnv_list_col, kn.hugo_symbol_col): 'BRAF'}
+        #     ]
+        # }, mr1
+        # self._print(p2)
+        # assert p2 == {
+        #     '$and': [
+        #         {self.p.hugo_symbol_key: 'BRAF', kn.variant_category_col: s.variant_category_mutation_val},
+        #         {self.p.hugo_symbol_key: 'BRAF', kn.variant_category_col: s.variant_category_cnv_val}
+        #     ]
+        # }, p2
+        # assert mr2 is None, mr2
+        #
+        # # clean up
+        # self.db.testSamples.drop()
 
     def test_create_low_coverage_query(self):
         pass
