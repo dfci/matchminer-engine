@@ -302,12 +302,12 @@ class TestMatchEngine(TestQueryUtilitiesShared):
         assert m == [{
             kn.sample_id_col: 'TEST-SAMPLE-BRAF-V600E',
             kn.oncotree_primary_diagnosis_name_col: 'Breast',
-            kn.mutation_list_col: {
+            kn.mutation_list_col: [{
                 kn.hugo_symbol_col: 'BRAF',
                 kn.protein_change_col: 'p.V600E',
                 kn.ref_residue_col: 'p.V600',
                 kn.mr_reason_level_col: 'gene',
-            }
+            }]
         }], m
 
         # genomic exclusion

@@ -99,3 +99,15 @@ def add_unwind(node, include):
     node['unwind'] = '$%s' % node['match_reason'].keys()[0].split('.')[0] \
         if 'match_reason' in node and node['match_reason'] is not None else None
     node['include'] = include
+    return node
+
+
+def reformat_matches(matches):
+    """Reformat matches so that they fit cerberus validation."""
+    variant_keys = [kn.mutation_list_col, kn.cnv_list_col, kn.sv_list_col, kn.wt_genes_col]
+    for match in matches:
+        for variant_key in variant_keys:
+            if variant_key in match:
+                match[variant_key] = [match[variant_key]]
+
+    return matches

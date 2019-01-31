@@ -40,3 +40,20 @@ class TestMatchEngineUtils(TestQueryUtilitiesShared):
         assert normalize_signature_vals(s.mt_pole_status, 'Yes') == (kn.pole_status_col, 'Yes')
         assert normalize_signature_vals(s.mt_apobec_status, 'Yes') == (kn.apobec_status_col, 'Yes')
         assert normalize_signature_vals(s.mt_uva_status, 'Yes') == (kn.uva_status_col, 'Yes')
+
+    def test_reformat_matches(self):
+        m1 = [
+            {kn.mutation_list_col: {kn.hugo_symbol_col: 'BRAF'}},
+            {kn.mutation_list_col: {kn.hugo_symbol_col: 'EGFR'}},
+            {kn.cnv_list_col: {kn.hugo_symbol_col: 'AKT1'}},
+            {kn.wt_genes_col: {kn.hugo_symbol_col: 'TP53'}},
+            {kn.sv_list_col: {kn.sv_comment_col: 'NTRK1'}}
+        ]
+        assert sorted(reformat_matches(m1)) == sorted([
+            {kn.mutation_list_col: [{kn.hugo_symbol_col: 'BRAF'}]},
+            {kn.mutation_list_col: [{kn.hugo_symbol_col: 'EGFR'}]},
+            {kn.cnv_list_col: [{kn.hugo_symbol_col: 'AKT1'}]},
+            {kn.wt_genes_col: [{kn.hugo_symbol_col: 'TP53'}]},
+            {kn.sv_list_col: [{kn.sv_comment_col: 'NTRK1'}]}
+        ])
+

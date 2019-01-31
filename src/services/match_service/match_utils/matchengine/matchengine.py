@@ -9,6 +9,7 @@ from src.utilities.utilities import get_db, format_match_tree_code
 from src.data_store.trial_matches_data_model import trial_matches_schema
 from src.services.match_service.match_utils.matchengine.assess_node_utils import AssessNodeUtils
 from src.services.match_service.match_utils.matchengine.intersect_results_utils import IntersectResultsUtils
+from src.services.match_service.match_utils.matchengine import matchengine_utils as me_utils
 
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s', )
 
@@ -100,6 +101,7 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
         :param sample_ids: {list of str or null}
         :return: {null}
         """
+
         # include inclusion reasons in projection
         if 'genomic_inclusion_reasons' in node:
             proj = node['genomic_inclusion_reasons']
@@ -123,12 +125,14 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
                 {'$project': proj},
             ]
             matches = list(self.db[s.sample_collection_name].aggregate(pipeline=pipeline, cursor={}))
+            matches = me_utils.reformat_matches(matches)
 
         # add exclusion reasons to match results
         for match in matches:
             if kn.mutation_list_col in match:
-                if 'variant_level' in node:
-                    match[kn.mutation_list_col][kn.mr_reason_level_col] = node['variant_level']
+                for variant in match[kn.mutation_list_col]:
+                    if 'variant_level' in node:
+                        variant[kn.mr_reason_level_col] = node['variant_level']
 
             elif kn.genomic_exclusion_reasons_col in node:
                 match[kn.genomic_exclusion_reasons_col] = [node[kn.genomic_exclusion_reasons_col]]
