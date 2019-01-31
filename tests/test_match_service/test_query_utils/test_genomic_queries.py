@@ -11,6 +11,42 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
 
         self.gq = GenomicQueries()
         self.p = ProjUtils()
+        self.standard_genomic_mut_proj = {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.protein_change_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.variant_class_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.cnv_call_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.ref_residue_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.transcript_exon_col): 1,
+        }
+        self.standard_genomic_cnv_proj = {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            '%s.%s' % (kn.cnv_list_col, kn.hugo_symbol_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.protein_change_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.variant_class_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.cnv_call_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.ref_residue_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.transcript_exon_col): 1,
+        }
+        self.standard_genomic_sv_proj = {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            '%s.%s' % (kn.sv_list_col, kn.hugo_symbol_col): 1,
+            '%s.%s' % (kn.sv_list_col, kn.protein_change_col): 1,
+            '%s.%s' % (kn.sv_list_col, kn.variant_class_col): 1,
+            '%s.%s' % (kn.sv_list_col, kn.cnv_call_col): 1,
+            '%s.%s' % (kn.sv_list_col, kn.ref_residue_col): 1,
+            '%s.%s' % (kn.sv_list_col, kn.transcript_exon_col): 1,
+        }
+        self.standard_genomic_wt_proj = {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            '%s.%s' % (kn.wt_genes_col, kn.hugo_symbol_col): 1,
+            '%s.%s' % (kn.wt_genes_col, kn.protein_change_col): 1,
+            '%s.%s' % (kn.wt_genes_col, kn.variant_class_col): 1,
+            '%s.%s' % (kn.wt_genes_col, kn.cnv_call_col): 1,
+            '%s.%s' % (kn.wt_genes_col, kn.ref_residue_col): 1,
+            '%s.%s' % (kn.wt_genes_col, kn.transcript_exon_col): 1,
+        }
 
     def tearDown(self):
         self.db.testSamples.drop()
@@ -49,14 +85,7 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
         assert mr1 == {
             '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF'
         }, mr1
-        assert p1 == {
-            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
-            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 1,
-            '%s.%s' % (kn.mutation_list_col, kn.protein_change_col): 1,
-            '%s.%s' % (kn.mutation_list_col, kn.variant_class_col): 1,
-            '%s.%s' % (kn.mutation_list_col, kn.cnv_call_col): 1,
-            '%s.%s' % (kn.mutation_list_col, kn.ref_residue_col): 1,
-        }, p1
+        assert p1 == self.standard_genomic_mut_proj, p1
         assert p2 == {
             self.p.hugo_symbol_key: 'BRAF',
             kn.variant_category_col: s.variant_category_mutation_val
@@ -103,33 +132,37 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
 
         # projections
         vc = self.gq.variant_category_dict[s.variant_category_mutation_val]
-        p1 = self.p.create_genomic_proj(include=True, query=q1)
-        p2 = self.p.create_genomic_proj(include=False,
-                                        keys=[vc, self.p.hugo_symbol_key, self.p.protein_change_key],
-                                        vals=[s.variant_category_mutation_val, 'BRAF', 'p.V600E'])
-        p3 = self.p.create_genomic_proj(include=True, query=q3)
-        p4 = self.p.create_genomic_proj(include=False,
-                                        keys=[vc, self.p.hugo_symbol_key, self.p.protein_change_key],
-                                        vals=[s.variant_category_mutation_val, 'BRAF', 'p.V600D'])
+        p1, mr1 = self.p.create_genomic_proj(include=True, query=q1)
+        p2, mr2 = self.p.create_genomic_proj(include=False,
+                                             keys=[vc, self.p.hugo_symbol_key, self.p.protein_change_key],
+                                             vals=[s.variant_category_mutation_val, 'BRAF', 'p.V600E'])
+        p3, mr3 = self.p.create_genomic_proj(include=True, query=q3)
+        p4, mr4 = self.p.create_genomic_proj(include=False,
+                                             keys=[vc, self.p.hugo_symbol_key, self.p.protein_change_key],
+                                             vals=[s.variant_category_mutation_val, 'BRAF', 'p.V600D'])
 
-        assert p1 == {
-            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
-            kn.mutation_list_col: q1[kn.mutation_list_col]
-        }, p1
+        assert p1 == self.standard_genomic_mut_proj, p1
+        assert mr1 == {
+            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF',
+            '%s.%s' % (kn.mutation_list_col, kn.protein_change_col): 'p.V600E'
+        }, mr1
         assert p2 == {
             self.p.hugo_symbol_key: 'BRAF',
             self.p.protein_change_key: 'p.V600E',
             kn.variant_category_col: s.variant_category_mutation_val
         }, p2
-        assert p3 == {
-            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
-            kn.mutation_list_col: q3[kn.mutation_list_col]
-        }, p3
+        assert mr2 is None, mr2
+        assert p3 == self.standard_genomic_mut_proj, p3
+        assert mr3 == {
+            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF',
+            '%s.%s' % (kn.mutation_list_col, kn.protein_change_col): 'p.V600D'
+        }, mr3
         assert p4 == {
             self.p.hugo_symbol_key: 'BRAF',
             self.p.protein_change_key: 'p.V600D',
             kn.variant_category_col: s.variant_category_mutation_val
         }, p4
+        assert mr4 is None, mr4
 
         # clean up
         self.db.testSamples.drop()
@@ -159,20 +192,22 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
 
         # projections
         vc = self.gq.variant_category_dict[s.variant_category_mutation_val]
-        p1 = self.p.create_genomic_proj(include=True, query=q1)
-        p2 = self.p.create_genomic_proj(include=False,
-                                        keys=[vc, self.p.hugo_symbol_key, self.p.ref_residue_key],
-                                        vals=[s.variant_category_mutation_val, 'BRAF', 'p.V600'])
+        p1, mr1 = self.p.create_genomic_proj(include=True, query=q1)
+        p2, mr2 = self.p.create_genomic_proj(include=False,
+                                             keys=[vc, self.p.hugo_symbol_key, self.p.ref_residue_key],
+                                             vals=[s.variant_category_mutation_val, 'BRAF', 'p.V600'])
 
-        assert p1 == {
-            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
-            kn.mutation_list_col: q1[kn.mutation_list_col]
-        }, p1
+        assert p1 == self.standard_genomic_mut_proj, p1
+        assert mr1 == {
+            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF',
+            '%s.%s' % (kn.mutation_list_col, kn.ref_residue_col): 'p.V600'
+        }, mr1
         assert p2 == {
             self.p.hugo_symbol_key: 'BRAF',
             self.p.ref_residue_key: 'p.V600',
             kn.variant_category_col: s.variant_category_mutation_val
         }, p2
+        assert mr2 is None, mr2
 
         # clean up
         self.db.testSamples.drop()
@@ -205,19 +240,21 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
         # projections
         # projections
         vc = self.gq.variant_category_dict[s.variant_category_variant_class_val]
-        p1 = self.p.create_genomic_proj(include=True, query=q1)
-        p2 = self.p.create_genomic_proj(include=False,
-                                        keys=[vc, self.p.hugo_symbol_key, self.p.variant_class_key],
-                                        vals=[s.variant_category_variant_class_val, 'BRAF', 'Nonsense_Mutation'])
-        assert p1 == {
-            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
-            kn.mutation_list_col: q1[kn.mutation_list_col]
-        }, p1
+        p1, mr1 = self.p.create_genomic_proj(include=True, query=q1)
+        p2, mr2 = self.p.create_genomic_proj(include=False,
+                                             keys=[vc, self.p.hugo_symbol_key, self.p.variant_class_key],
+                                             vals=[s.variant_category_variant_class_val, 'BRAF', 'Nonsense_Mutation'])
+        assert p1 == self.standard_genomic_mut_proj, p1
+        assert mr1 == {
+            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF',
+            '%s.%s' % (kn.mutation_list_col, kn.variant_class_col): 'Nonsense_Mutation'
+        }, mr1
         assert p2 == {
             self.p.hugo_symbol_key: 'BRAF',
             self.p.variant_class_key: 'Nonsense_Mutation',
             kn.variant_category_col: s.variant_category_variant_class_val
         }, p2
+        assert mr2 is None, mr2
 
         # clean up
         self.db.testSamples.drop()
@@ -262,34 +299,39 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
 
         # projections
         vc = self.gq.variant_category_dict[s.variant_category_mutation_val]
-        p1 = self.p.create_genomic_proj(include=True, query=q1)
-        p2 = self.p.create_genomic_proj(include=False,
-                                        keys=[vc, self.p.hugo_symbol_key, self.p.transcript_exon_key, self.p.variant_class_key],
-                                        vals=[s.variant_category_mutation_val, 'BRAF', 20, None])
-        p3 = self.p.create_genomic_proj(include=True, query=q3)
-        p4 = self.p.create_genomic_proj(include=False,
-                                        keys=[vc, self.p.hugo_symbol_key, self.p.transcript_exon_key, self.p.variant_class_key],
-                                        vals=[s.variant_category_mutation_val, 'BRAF', 20, 'In_Frame_Ins'])
+        p1, mr1 = self.p.create_genomic_proj(include=True, query=q1)
+        p2, mr2 = self.p.create_genomic_proj(include=False,
+                                             keys=[vc, self.p.hugo_symbol_key, self.p.transcript_exon_key, self.p.variant_class_key],
+                                             vals=[s.variant_category_mutation_val, 'BRAF', 20, None])
+        p3, mr3 = self.p.create_genomic_proj(include=True, query=q3)
+        p4, mr4 = self.p.create_genomic_proj(include=False,
+                                             keys=[vc, self.p.hugo_symbol_key, self.p.transcript_exon_key, self.p.variant_class_key],
+                                             vals=[s.variant_category_mutation_val, 'BRAF', 20, 'In_Frame_Ins'])
 
-        assert p1 == {
-            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
-            kn.mutation_list_col: q1[kn.mutation_list_col]
-        }, p1
+        assert p1 == self.standard_genomic_mut_proj, p1
+        assert mr1 == {
+            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF',
+            '%s.%s' % (kn.mutation_list_col, kn.transcript_exon_col): 20
+        }, mr1
         assert p2 == {
             self.p.hugo_symbol_key: 'BRAF',
             self.p.transcript_exon_key: 20,
             kn.variant_category_col: s.variant_category_mutation_val
         }, p2
-        assert p3 == {
-            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
-            kn.mutation_list_col: q3[kn.mutation_list_col]
-        }, p3
+        assert mr2 is None, mr2
+        assert p3 == self.standard_genomic_mut_proj, p3
+        assert mr3 == {
+            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF',
+            '%s.%s' % (kn.mutation_list_col, kn.transcript_exon_col): 20,
+            '%s.%s' % (kn.mutation_list_col, kn.variant_class_col): 'In_Frame_Ins'
+        }, mr3
         assert p4 == {
             self.p.hugo_symbol_key: 'BRAF',
             self.p.transcript_exon_key: 20,
             self.p.variant_class_key: 'In_Frame_Ins',
             kn.variant_category_col: s.variant_category_mutation_val
         }, p4
+        assert mr4 is None, mr4
 
         # clean up
         self.db.testSamples.drop()
@@ -324,18 +366,19 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
 
         # projections
         vc = self.gq.variant_category_dict[s.variant_category_cnv_val]
-        p1 = self.p.create_genomic_proj(include=True, query=q1)
-        p2 = self.p.create_genomic_proj(include=False,
-                                        keys=[vc, self.p.hugo_symbol_key],
-                                        vals=[s.variant_category_cnv_val, 'BRAF'])
-        assert p1 == {
-            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
-            kn.cnv_list_col: q1[kn.cnv_list_col]
-        }, p1
+        p1, mr1 = self.p.create_genomic_proj(include=True, query=q1)
+        p2, mr2 = self.p.create_genomic_proj(include=False,
+                                             keys=[vc, self.p.hugo_symbol_key],
+                                             vals=[s.variant_category_cnv_val, 'BRAF'])
+        assert p1 == self.standard_genomic_cnv_proj, p1
+        assert mr1 == {
+            '%s.%s' % (kn.cnv_list_col, kn.hugo_symbol_col): 'BRAF',
+        }, mr1
         assert p2 == {
             self.p.hugo_symbol_key: 'BRAF',
             kn.variant_category_col: s.variant_category_cnv_val
         }, p2
+        assert mr2 is None, mr2
 
         # clean up
         self.db.testSamples.drop()
@@ -364,19 +407,21 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
 
         # projections
         vc = self.gq.variant_category_dict[s.variant_category_cnv_val]
-        p1 = self.p.create_genomic_proj(include=True, query=q1)
-        p2 = self.p.create_genomic_proj(include=False,
-                                        keys=[vc, self.p.hugo_symbol_key, self.p.cnv_call_key],
-                                        vals=[s.variant_category_cnv_val, 'BRAF', s.cnv_call_hetero_del])
-        assert p1 == {
-            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
-            kn.cnv_list_col: q1[kn.cnv_list_col]
-        }, p1
+        p1, mr1 = self.p.create_genomic_proj(include=True, query=q1)
+        p2, mr2 = self.p.create_genomic_proj(include=False,
+                                             keys=[vc, self.p.hugo_symbol_key, self.p.cnv_call_key],
+                                             vals=[s.variant_category_cnv_val, 'BRAF', s.cnv_call_hetero_del])
+        assert p1 == self.standard_genomic_cnv_proj, p1
+        assert mr1 == {
+            '%s.%s' % (kn.cnv_list_col, kn.hugo_symbol_col): 'BRAF',
+            '%s.%s' % (kn.cnv_list_col, kn.cnv_call_col): s.cnv_call_hetero_del,
+        }, mr1
         assert p2 == {
             self.p.hugo_symbol_key: 'BRAF',
             self.p.cnv_call_key: s.cnv_call_hetero_del,
             kn.variant_category_col: s.variant_category_cnv_val
         }, p2
+        assert mr2 is None, mr2
 
         # clean up
         self.db.testSamples.drop()
@@ -404,18 +449,19 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
 
         # projections
         vc = self.gq.variant_category_dict[s.variant_category_sv_val]
-        p1 = self.p.create_genomic_proj(include=True, query=q1)
-        p2 = self.p.create_genomic_proj(include=False,
-                                        keys=[vc, self.p.hugo_symbol_key],
-                                        vals=[s.variant_category_sv_val, 'NTRK1'])
-        assert p1 == {
-            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
-            kn.sv_list_col: q1[kn.sv_list_col]
-        }, p1
+        p1, mr1 = self.p.create_genomic_proj(include=True, query=q1)
+        p2, mr2 = self.p.create_genomic_proj(include=False,
+                                             keys=[vc, self.p.hugo_symbol_key],
+                                             vals=[s.variant_category_sv_val, 'NTRK1'])
+        assert p1 == self.standard_genomic_sv_proj, p1
+        assert mr1 == {
+            '%s.%s' % (kn.sv_list_col, kn.sv_comment_col): q1[kn.sv_list_col]['$elemMatch'][kn.sv_comment_col]
+        }, mr1
         assert p2 == {
             self.p.hugo_symbol_key: 'NTRK1',
             kn.variant_category_col: s.variant_category_sv_val
         }, p2
+        assert mr2 is None, mr2
 
         # clean up
         self.db.testSamples.drop()
@@ -445,18 +491,19 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
 
         # projections
         vc = self.gq.variant_category_dict[s.variant_category_wt_val]
-        p1 = self.p.create_genomic_proj(include=True, query=q1)
-        p2 = self.p.create_genomic_proj(include=False,
-                                        keys=[vc, self.p.hugo_symbol_key],
-                                        vals=[s.variant_category_wt_val, 'BRAF'])
-        assert p1 == {
-            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
-            kn.wt_genes_col: q1[kn.wt_genes_col]
-        }, p1
+        p1, mr1 = self.p.create_genomic_proj(include=True, query=q1)
+        p2, mr2 = self.p.create_genomic_proj(include=False,
+                                             keys=[vc, self.p.hugo_symbol_key],
+                                             vals=[s.variant_category_wt_val, 'BRAF'])
+        assert p1 == self.standard_genomic_wt_proj, p1
+        assert mr1 == {
+            '%s.%s' % (kn.wt_genes_col, kn.hugo_symbol_col): 'BRAF'
+        }, mr1
         assert p2 == {
             self.p.hugo_symbol_key: 'BRAF',
             kn.variant_category_col: s.variant_category_wt_val
         }, p2
+        assert mr2 is None, mr2
 
         # clean up
         self.db.testSamples.drop()
@@ -481,11 +528,14 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
         assert len(res2) == 0, res2
 
         # projections
-        p1 = self.p.create_genomic_proj(include=True, query=q1)
+        p1, mr1 = self.p.create_genomic_proj(include=True, query=q1)
         assert p1 == {
             '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
-            kn.mmr_status_col: s.mmr_status_deficient_val
+            kn.mmr_status_col: 1
         }, p1
+        assert mr1 == {
+            kn.mmr_status_col: s.mmr_status_deficient_val
+        }
 
         # clean up
         self.db.testSamples.drop()
@@ -514,15 +564,29 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
         assert res2 == ['TEST-SAMPLE-NO-MUTATION', 'TEST-SAMPLE-TP53-R278W']
 
         # projections
-        p1 = self.p.create_any_variant_proj(gene_name='BRAF', include=True, query=q1)
-        p2 = self.p.create_any_variant_proj(gene_name='BRAF', include=False, query=q1)
+        p1, mr1 = self.p.create_any_variant_proj(gene_name='BRAF', include=True, query=q1)
+        p2, mr2 = self.p.create_any_variant_proj(gene_name='BRAF', include=False, query=q1)
         assert p1 == {
             '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
-            '$or': [
-                {kn.mutation_list_col: q1['$or'][0][kn.mutation_list_col]},
-                {kn.cnv_list_col: q1['$or'][1][kn.cnv_list_col]},
-            ]
+            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.protein_change_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.variant_class_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.cnv_call_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.ref_residue_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.transcript_exon_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.hugo_symbol_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.protein_change_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.variant_class_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.cnv_call_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.ref_residue_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.transcript_exon_col): 1,
         }, p1
+        assert mr1 == {
+            '$or': [
+                {'%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF'},
+                {'%s.%s' % (kn.cnv_list_col, kn.hugo_symbol_col): 'BRAF'}
+            ]
+        }, mr1
         self._print(p2)
         assert p2 == {
             '$and': [
@@ -530,6 +594,7 @@ class TestGenomicQueries(TestQueryUtilitiesShared):
                 {self.p.hugo_symbol_key: 'BRAF', kn.variant_category_col: s.variant_category_cnv_val}
             ]
         }, p2
+        assert mr2 is None, mr2
 
         # clean up
         self.db.testSamples.drop()

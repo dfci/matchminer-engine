@@ -95,8 +95,7 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
 
         return proj, match_reasons
 
-    @staticmethod
-    def create_genomic_inclusion_proj(**kwargs):
+    def create_genomic_inclusion_proj(self, **kwargs):
         """
         Create MongoDB projection to return only the matching genomic variants from the sample record.
 
@@ -105,15 +104,30 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
 
         :return: {dict}
         """
-        variant_category = kwargs['query'].keys()[0]
-        match_reason = {
-            '%s.%s' % (variant_category, k): v for k, v in kwargs['query'][variant_category]['$elemMatch'].iteritems()
-        }
 
-        proj_keys = [kn.hugo_symbol_col, kn.protein_change_col, kn.variant_class_col, kn.cnv_call_col, kn.ref_residue_col]
-        proj = {
-            '%s.%s' % (variant_category, k): 1 for k in proj_keys
-        }
+        variant_category = kwargs['query'].keys()[0]
+        if variant_category == '$or':
+            match_reason = {'$or': []}
+            proj = {}
+            for item in kwargs['query'][variant_category]:
+                p, mr = self.create_genomic_inclusion_proj(query=item)
+                match_reason['$or'].append(mr)
+                for k, v in p.iteritems():
+                    proj[k] = v
+
+        elif variant_category in [kn.mmr_status_col, kn.ms_status_col]:
+            match_reason = {variant_category: kwargs['query'][variant_category]}
+            proj = {variant_category: 1}
+        else:
+            match_reason = {
+                '%s.%s' % (variant_category, k): v for k, v in kwargs['query'][variant_category]['$elemMatch'].iteritems()
+            }
+
+            proj_keys = [kn.hugo_symbol_col, kn.protein_change_col, kn.variant_class_col, kn.cnv_call_col,
+                         kn.ref_residue_col, kn.transcript_exon_col]
+            proj = {
+                '%s.%s' % (variant_category, k): 1 for k in proj_keys
+            }
         return proj, match_reason
 
     def create_genomic_exclusion_proj(self, **kwargs):
@@ -164,4 +178,4 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
                                                            vals=[s.variant_category_mutation_val, gene_name])
         cnv_proj = self.create_genomic_exclusion_proj(keys=[kn.cnv_list_col, kn.hugo_symbol_col],
                                                       vals=[s.variant_category_cnv_val, gene_name])
-        return {'$and': [mutation_proj, cnv_proj]}
+        return {'$and': [mutation_proj[0], cnv_proj[0]]}, None
