@@ -53,10 +53,10 @@ class Sort:
         """
         self.trial_matches_df = pd.DataFrame.from_dict(self.trial_matches)
 
-        self.trial_matches_df['has_mut'] = self.trial_matches_df[kn.mutation_list_col].apply(has_vc) if kn.mutation_list_col in self.trial_matches else False
-        self.trial_matches_df['has_cnv'] = self.trial_matches_df[kn.cnv_list_col].apply(has_vc) if kn.cnv_list_col in self.trial_matches else False
-        self.trial_matches_df['has_sv'] = self.trial_matches_df[kn.sv_list_col].apply(has_vc) if kn.sv_list_col in self.trial_matches else False
-        self.trial_matches_df['has_wt'] = self.trial_matches_df[kn.wt_genes_col].apply(has_vc) if kn.wt_genes_col in self.trial_matches else False
+        self.trial_matches_df['has_mut'] = self.trial_matches_df[kn.mutation_list_col].apply(has_vc) if kn.mutation_list_col in self.trial_matches_df else False
+        self.trial_matches_df['has_cnv'] = self.trial_matches_df[kn.cnv_list_col].apply(has_vc) if kn.cnv_list_col in self.trial_matches_df else False
+        self.trial_matches_df['has_sv'] = self.trial_matches_df[kn.sv_list_col].apply(has_vc) if kn.sv_list_col in self.trial_matches_df else False
+        self.trial_matches_df['has_wt'] = self.trial_matches_df[kn.wt_genes_col].apply(has_vc) if kn.wt_genes_col in self.trial_matches_df else False
 
         self.all_sample_ids = self.trial_matches_df[kn.sample_id_col].unique().tolist()
         self.f_alive = (self.trial_matches_df[kn.vital_status_col] == 'alive')
