@@ -113,6 +113,7 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
             '%s.%s' % (kn.mutation_list_col, kn.protein_change_col): 1,
             '%s.%s' % (kn.mutation_list_col, kn.variant_class_col): 1,
             '%s.%s' % (kn.mutation_list_col, kn.cnv_call_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.ref_residue_col): 1,
         }
         assert node['variant_level'] == 'gene'
         assert node['unwind'] == '$%s' % kn.mutation_list_col

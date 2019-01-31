@@ -248,36 +248,36 @@ class TestMatchEngine(TestQueryUtilitiesShared):
             self.test_case_braf_v600e
         ])
 
-        # # clinical inclusion
-        # node = {
-        #     'type': 'clinical',
-        #     'query': {kn.oncotree_primary_diagnosis_name_col: 'Lung'},
-        #     'clinical_inclusion_reasons': {
-        #         '_id': 0, kn.sample_id_col: 1,
-        #         kn.oncotree_primary_diagnosis_name_col: 1
-        #     }
-        # }
-        # me = MatchEngine(match_tree=None, trial_info=None, mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
-        # m = me._search_for_matching_records(node=node)
-        # assert m == [{
-        #     kn.sample_id_col: 'TEST-SAMPLE-LUNG',
-        #     kn.oncotree_primary_diagnosis_name_col: 'Lung'
-        # }], m
-        #
-        # # clinical exclusion
-        # node = {
-        #     'type': 'clinical',
-        #     'query': {kn.oncotree_primary_diagnosis_name_col: {'$ne': 'Lung'}},
-        #     kn.clinical_exclusion_reasons_col: {kn.oncotree_primary_diagnosis_name_col: 'Lung'}
-        # }
-        # me = MatchEngine(match_tree=None, trial_info=None, mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
-        # m = me._search_for_matching_records(node=node)
-        # assert m[0] == {
-        #     kn.sample_id_col: 'TEST-SAMPLE-COLON',
-        #     kn.clinical_exclusion_reasons_col: [{
-        #         kn.oncotree_primary_diagnosis_name_col: 'Lung'
-        #     }]
-        # }, m[0]
+        # clinical inclusion
+        node = {
+            'type': 'clinical',
+            'query': {kn.oncotree_primary_diagnosis_name_col: 'Lung'},
+            'clinical_inclusion_reasons': {
+                '_id': 0, kn.sample_id_col: 1,
+                kn.oncotree_primary_diagnosis_name_col: 1
+            }
+        }
+        me = MatchEngine(match_tree=None, trial_info=None, mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
+        m = me._search_for_matching_records(node=node)
+        assert m == [{
+            kn.sample_id_col: 'TEST-SAMPLE-LUNG',
+            kn.oncotree_primary_diagnosis_name_col: 'Lung'
+        }], m
+
+        # clinical exclusion
+        node = {
+            'type': 'clinical',
+            'query': {kn.oncotree_primary_diagnosis_name_col: {'$ne': 'Lung'}},
+            kn.clinical_exclusion_reasons_col: {kn.oncotree_primary_diagnosis_name_col: 'Lung'}
+        }
+        me = MatchEngine(match_tree=None, trial_info=None, mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
+        m = me._search_for_matching_records(node=node)
+        assert m[0] == {
+            kn.sample_id_col: 'TEST-SAMPLE-COLON',
+            kn.clinical_exclusion_reasons_col: [{
+                kn.oncotree_primary_diagnosis_name_col: 'Lung'
+            }]
+        }, m[0]
 
         # genomic inclusion
         node = {
@@ -291,6 +291,7 @@ class TestMatchEngine(TestQueryUtilitiesShared):
                 '%s.%s' % (kn.mutation_list_col, kn.protein_change_col): 1,
                 '%s.%s' % (kn.mutation_list_col, kn.variant_class_col): 1,
                 '%s.%s' % (kn.mutation_list_col, kn.cnv_call_col): 1,
+                '%s.%s' % (kn.mutation_list_col, kn.ref_residue_col): 1,
             },
             'unwind': '$%s' % kn.mutation_list_col,
             'match_reason': {'%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF'},
@@ -298,18 +299,15 @@ class TestMatchEngine(TestQueryUtilitiesShared):
         }
         me = MatchEngine(match_tree=None, trial_info=None, mongo_uri='mongodb://localhost:27017', mongo_dbname='matchminer')
         m = me._search_for_matching_records(node=node)
-        return
-        print m
-        return
         assert m == [{
             kn.sample_id_col: 'TEST-SAMPLE-BRAF-V600E',
             kn.oncotree_primary_diagnosis_name_col: 'Breast',
-            kn.mutation_list_col: [{
-                kn.mr_reason_level_col: 'gene',
+            kn.mutation_list_col: {
                 kn.hugo_symbol_col: 'BRAF',
                 kn.protein_change_col: 'p.V600E',
-                kn.ref_residue_col: 'p.V600'
-            }]
+                kn.ref_residue_col: 'p.V600',
+                kn.mr_reason_level_col: 'gene',
+            }
         }], m
 
         # genomic exclusion

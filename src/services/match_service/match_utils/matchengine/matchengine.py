@@ -113,7 +113,7 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
             node['query'][kn.sample_id_col] = {'$in': sample_ids}
 
         # perform query
-        if node['type'] == 'clinical':
+        if node['type'] == 'clinical' or 'include' not in node or node['include'] is False:
             matches = list(self.db[s.sample_collection_name].find(node['query'], proj))
         elif node['type'] == 'genomic' and node['include'] is True:
             pipeline = [
@@ -123,15 +123,12 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
                 {'$project': proj},
             ]
             matches = list(self.db[s.sample_collection_name].aggregate(pipeline=pipeline, cursor={}))
-            print matches
-            return
 
         # add exclusion reasons to match results
         for match in matches:
             if kn.mutation_list_col in match:
-                for variant in match[kn.mutation_list_col]:
-                    if 'variant_level' in node:
-                        variant[kn.mr_reason_level_col] = node['variant_level']
+                if 'variant_level' in node:
+                    match[kn.mutation_list_col][kn.mr_reason_level_col] = node['variant_level']
 
             elif kn.genomic_exclusion_reasons_col in node:
                 match[kn.genomic_exclusion_reasons_col] = [node[kn.genomic_exclusion_reasons_col]]

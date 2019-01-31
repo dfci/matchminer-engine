@@ -110,7 +110,7 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
             '%s.%s' % (variant_category, k): v for k, v in kwargs['query'][variant_category]['$elemMatch'].iteritems()
         }
 
-        proj_keys = [kn.hugo_symbol_col, kn.protein_change_col, kn.variant_class_col, kn.cnv_call_col]
+        proj_keys = [kn.hugo_symbol_col, kn.protein_change_col, kn.variant_class_col, kn.cnv_call_col, kn.ref_residue_col]
         proj = {
             '%s.%s' % (variant_category, k): 1 for k in proj_keys
         }
