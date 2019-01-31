@@ -107,8 +107,18 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
         self.a._parse_gene_level(node=node)
         assert 'query' in node
         assert 'genomic_inclusion_reasons' in node
-        assert node['genomic_inclusion_reasons'][kn.mutation_list_col] == node['query'][kn.mutation_list_col]
+        assert node['genomic_inclusion_reasons'] == {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.protein_change_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.variant_class_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.cnv_call_col): 1,
+        }
         assert node['variant_level'] == 'gene'
+        assert node['unwind'] == '$%s' % kn.mutation_list_col
+        assert node['match_reason'] == {'%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF'}
+        assert node['include'] is True
+        return
 
         # exclusive mutation
         node = {'value': {

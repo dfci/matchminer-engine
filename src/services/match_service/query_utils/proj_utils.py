@@ -85,15 +85,15 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
         :param kwargs:
         :return: {dict}
         """
-        subproj = self.genomic_inclusion_dict[include](**kwargs)
+        subproj, match_reasons = self.genomic_inclusion_dict[include](**kwargs)
         if not include:
-            return subproj
+            return subproj, match_reasons
 
         proj = self.proj.copy()
         for k, v in subproj.iteritems():
             proj[k] = v
 
-        return proj
+        return proj, match_reasons
 
     @staticmethod
     def create_genomic_inclusion_proj(**kwargs):
@@ -105,7 +105,16 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
 
         :return: {dict}
         """
-        return kwargs['query']
+        variant_category = kwargs['query'].keys()[0]
+        match_reason = {
+            '%s.%s' % (variant_category, k): v for k, v in kwargs['query'][variant_category]['$elemMatch'].iteritems()
+        }
+
+        proj_keys = [kn.hugo_symbol_col, kn.protein_change_col, kn.variant_class_col, kn.cnv_call_col]
+        proj = {
+            '%s.%s' % (variant_category, k): 1 for k in proj_keys
+        }
+        return proj, match_reason
 
     def create_genomic_exclusion_proj(self, **kwargs):
         """
@@ -117,6 +126,7 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
 
         :return: {dict}
         """
+
         proj = {}
         for k, v in zip(kwargs['keys'], kwargs['vals']):
             if v is None:
@@ -129,7 +139,7 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
 
                 proj[k] = v
 
-        return proj
+        return proj, None
 
     def create_any_variant_proj(self, gene_name, include=True, query=None):
         """

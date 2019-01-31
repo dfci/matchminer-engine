@@ -113,7 +113,18 @@ class MatchEngine(AssessNodeUtils, IntersectResultsUtils):
             node['query'][kn.sample_id_col] = {'$in': sample_ids}
 
         # perform query
-        matches = list(self.db[s.sample_collection_name].find(node['query'], proj))
+        if node['type'] == 'clinical':
+            matches = list(self.db[s.sample_collection_name].find(node['query'], proj))
+        elif node['type'] == 'genomic' and node['include'] is True:
+            pipeline = [
+                {'$match': node['query']},
+                {'$unwind': node['unwind']},
+                {'$match': node['match_reason']},
+                {'$project': proj},
+            ]
+            matches = list(self.db[s.sample_collection_name].aggregate(pipeline=pipeline, cursor={}))
+            print matches
+            return
 
         # add exclusion reasons to match results
         for match in matches:

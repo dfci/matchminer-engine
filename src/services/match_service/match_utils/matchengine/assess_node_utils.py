@@ -204,10 +204,13 @@ class AssessNodeUtils(ClinicalQueries, GenomicQueries, ProjUtils):
                 self.variant_category_dict[variant_category]: variant_category,
                 self.hugo_symbol_key: gene_name
             }
-            node[proj] = self.create_genomic_proj(include=include,
-                                                  query=node['query'],
-                                                  keys=proj_info.keys(),
-                                                  vals=proj_info.values())
+            node[proj], node['match_reason'] = self.create_genomic_proj(include=include,
+                                                                        query=node['query'],
+                                                                        keys=proj_info.keys(),
+                                                                        vals=proj_info.values())
+            node['unwind'] = '$%s' % node['match_reason'].keys()[0].split('.')[0]
+
+        node['include'] = include
         return node
 
     def _parse_sv(self, node):
