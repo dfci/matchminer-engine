@@ -35,6 +35,8 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
             kn.vital_status_col: 1
         }
         self.exclusion_key = 'ne'
+        self.proj_keys = [kn.hugo_symbol_col, kn.protein_change_col, kn.variant_class_col, kn.cnv_call_col,
+                         kn.ref_residue_col, kn.transcript_exon_col, kn.sv_comment_col]
 
     def create_clinical_proj(self, include=True, **kwargs):
         """
@@ -122,11 +124,8 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
             match_reason = {
                 '%s.%s' % (variant_category, k): v for k, v in kwargs['query'][variant_category]['$elemMatch'].iteritems()
             }
-
-            proj_keys = [kn.hugo_symbol_col, kn.protein_change_col, kn.variant_class_col, kn.cnv_call_col,
-                         kn.ref_residue_col, kn.transcript_exon_col, kn.sv_comment_col]
             proj = {
-                '%s.%s' % (variant_category, k): 1 for k in proj_keys
+                '%s.%s' % (variant_category, k): 1 for k in self.proj_keys
             }
         return proj, match_reason
 
@@ -164,9 +163,26 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
         :param query: {dict or null}
         :return: {dict}
         """
-        # todo enable
-        any_variant_dict = {True: self.create_genomic_proj, False: self.create_any_variant_exclusion_proj}
+        any_variant_dict = {True: self.create_any_variant_inclusion_proj, False: self.create_any_variant_exclusion_proj}
         return any_variant_dict[include](include=include, gene_name=gene_name, query=query)
+
+    def create_any_variant_inclusion_proj(self, gene_name, **kwargs):
+        """
+        Create an inclusive genomic projection for an inclusion query against any variant category.
+
+        :param gene_name: {str}
+        :return: {dict}
+        """
+        proj = self.proj.copy()
+        for k in self.proj_keys:
+            proj['%s.%s' % (kn.mutation_list_col, k)] = 1
+            proj['%s.%s' % (kn.cnv_list_col, k)] = 1
+
+        match_reason = {'$or': [
+            {'%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): gene_name},
+            {'%s.%s' % (kn.cnv_list_col, kn.hugo_symbol_col): gene_name}
+        ]}
+        return proj, match_reason
 
     def create_any_variant_exclusion_proj(self, gene_name, **kwargs):
         """

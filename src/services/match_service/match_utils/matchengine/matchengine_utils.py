@@ -96,8 +96,9 @@ def add_unwind(node, include):
     :param include: {bool}
     :return: {null}
     """
-    node['unwind'] = '$%s' % node['match_reason'].keys()[0].split('.')[0] \
-        if 'match_reason' in node and node['match_reason'] is not None else None
+    if 'unwind' not in node:
+        node['unwind'] = '$%s' % node['match_reason'].keys()[0].split('.')[0] \
+            if 'match_reason' in node and node['match_reason'] is not None else None
     node['include'] = include
     return node
 

@@ -185,12 +185,14 @@ class AssessNodeUtils(ClinicalQueries, GenomicQueries, ProjUtils):
         # Any Variation
         if variant_category == s.variant_category_any_val:
 
-            # todo enable
             # query
             node['query'] = self.create_any_variant_query(gene_name=gene_name, include=include)
 
             # projection
-            node[proj] = self.create_any_variant_proj(gene_name=gene_name, include=include, query=node['query'])
+            node[proj], node['match_reason'] = self.create_any_variant_proj(gene_name=gene_name,
+                                                                            include=include,
+                                                                            query=node['query'])
+            node['unwind'] = '$%s' % kn.mutation_list_col
 
         else:
 
