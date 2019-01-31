@@ -178,13 +178,14 @@ class AssessNodeUtils(ClinicalQueries, GenomicQueries, ProjUtils):
         gene_name = node['value'][s.mt_hugo_symbol]
         variant_category, include = self._parse_variant_category(node=node)
         if variant_category == s.variant_category_sv_val:
-            return self._parse_sv(node=node)
+            return me_utils.add_unwind(node=self._parse_sv(node=node), include=include)
 
         proj = 'genomic_%s' % self.proj_dict[include]
 
         # Any Variation
         if variant_category == s.variant_category_any_val:
 
+            # todo enable
             # query
             node['query'] = self.create_any_variant_query(gene_name=gene_name, include=include)
 
@@ -208,10 +209,8 @@ class AssessNodeUtils(ClinicalQueries, GenomicQueries, ProjUtils):
                                                                         query=node['query'],
                                                                         keys=proj_info.keys(),
                                                                         vals=proj_info.values())
-            node['unwind'] = '$%s' % node['match_reason'].keys()[0].split('.')[0]
 
-        node['include'] = include
-        return node
+        return me_utils.add_unwind(node=node, include=include)
 
     def _parse_sv(self, node):
         """
@@ -233,10 +232,10 @@ class AssessNodeUtils(ClinicalQueries, GenomicQueries, ProjUtils):
             self.variant_category_dict[variant_category]: variant_category,
             self.hugo_symbol_key: gene_name
         }
-        node[proj] = self.create_genomic_proj(include=include,
-                                              query=node['query'],
-                                              keys=proj_info.keys(),
-                                              vals=proj_info.values())
+        node[proj], node['match_reason'] = self.create_genomic_proj(include=include,
+                                                                    query=node['query'],
+                                                                    keys=proj_info.keys(),
+                                                                    vals=proj_info.values())
         return node
 
     def _parse_variant_level(self, node):
@@ -264,11 +263,11 @@ class AssessNodeUtils(ClinicalQueries, GenomicQueries, ProjUtils):
             self.hugo_symbol_key: gene_name,
             self.protein_change_key: protein_change
         }
-        node[proj] = self.create_genomic_proj(include=include,
-                                              query=node['query'],
-                                              keys=proj_info.keys(),
-                                              vals=proj_info.values())
-        return node
+        node[proj], node['match_reason'] = self.create_genomic_proj(include=include,
+                                                                    query=node['query'],
+                                                                    keys=proj_info.keys(),
+                                                                    vals=proj_info.values())
+        return me_utils.add_unwind(node=node, include=include)
 
     def _parse_wildcard_level(self, node):
         """
@@ -295,11 +294,12 @@ class AssessNodeUtils(ClinicalQueries, GenomicQueries, ProjUtils):
             self.hugo_symbol_key: gene_name,
             self.ref_residue_key: protein_change
         }
-        node[proj] = self.create_genomic_proj(include=include,
-                                              query=node['query'],
-                                              keys=proj_info.keys(),
-                                              vals=proj_info.values())
-        return node
+        node[proj],  node['match_reason'] = self.create_genomic_proj(include=include,
+                                                                     query=node['query'],
+                                                                     keys=proj_info.keys(),
+                                                                     vals=proj_info.values())
+
+        return me_utils.add_unwind(node=node, include=include)
 
     def _parse_exon_level(self, node):
         """
@@ -329,11 +329,12 @@ class AssessNodeUtils(ClinicalQueries, GenomicQueries, ProjUtils):
             self.transcript_exon_key: exon,
             self.variant_class_key: variant_class
         }
-        node[proj] = self.create_genomic_proj(include=include,
-                                              query=node['query'],
-                                              keys=proj_info.keys(),
-                                              vals=proj_info.values())
-        return node
+        node[proj], node['match_reason'] = self.create_genomic_proj(include=include,
+                                                                    query=node['query'],
+                                                                    keys=proj_info.keys(),
+                                                                    vals=proj_info.values())
+
+        return me_utils.add_unwind(node=node, include=include)
 
     def _parse_variant_class_level(self, node):
         """
@@ -360,11 +361,12 @@ class AssessNodeUtils(ClinicalQueries, GenomicQueries, ProjUtils):
             self.hugo_symbol_key: gene_name,
             self.variant_class_key: variant_class
         }
-        node[proj] = self.create_genomic_proj(include=include,
-                                              query=node['query'],
-                                              keys=proj_info.keys(),
-                                              vals=proj_info.values())
-        return node
+        node[proj], node['match_reason'] = self.create_genomic_proj(include=include,
+                                                                    query=node['query'],
+                                                                    keys=proj_info.keys(),
+                                                                    vals=proj_info.values())
+
+        return me_utils.add_unwind(node=node, include=include)
 
     def _parse_cnv_call(self, node):
         """
@@ -391,11 +393,12 @@ class AssessNodeUtils(ClinicalQueries, GenomicQueries, ProjUtils):
             self.hugo_symbol_key: gene_name,
             self.cnv_call_key: cnv_call
         }
-        node[proj] = self.create_genomic_proj(include=include,
-                                              query=node['query'],
-                                              keys=proj_info.keys(),
-                                              vals=proj_info.values())
-        return node
+        node[proj], node['match_reason'] = self.create_genomic_proj(include=include,
+                                                                    query=node['query'],
+                                                                    keys=proj_info.keys(),
+                                                                    vals=proj_info.values())
+
+        return me_utils.add_unwind(node=node, include=include)
 
     def _parse_signature(self, node, criteria):
         """
@@ -409,7 +412,8 @@ class AssessNodeUtils(ClinicalQueries, GenomicQueries, ProjUtils):
             if sig in criteria:
                 sigtype, sigval = me_utils.normalize_signature_vals(signature_type=sig, signature_val=node['value'][sig])
                 node['query'] = self.create_mutational_signature_query(signature_type=sigtype, signature_val=sigval)
-                node['genomic_inclusion_reasons'] = self.create_genomic_proj(include=True, query=node['query'])
+                node['genomic_inclusion_reasons'], node['match_reason'] = self.create_genomic_proj(include=True,
+                                                                                                   query=node['query'])
                 return node
 
     def _parse_wildtype(self, node):
@@ -423,9 +427,10 @@ class AssessNodeUtils(ClinicalQueries, GenomicQueries, ProjUtils):
         gene_name = node['value'][s.mt_hugo_symbol]
 
         # query
-        node['query'] = self.create_gene_level_query(gene_name=gene_name,
-                                                     variant_category=s.variant_category_wt_val,
-                                                     include=True)
+        node['query'] =self.create_gene_level_query(gene_name=gene_name,
+                                                    variant_category=s.variant_category_wt_val,
+                                                    include=True)
         # projection
-        node['genomic_inclusion_reasons'] = self.create_genomic_proj(include=True, query=node['query'])
-        return node
+        node['genomic_inclusion_reasons'], node['match_reason'] = self.create_genomic_proj(include=True,
+                                                                                           query=node['query'])
+        return me_utils.add_unwind(node=node, include=True)

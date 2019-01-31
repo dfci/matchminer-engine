@@ -12,6 +12,47 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
         self.query = {'$and': []}
         self.proj_info = []
 
+        self.standard_genomic_mut_proj = {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.protein_change_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.variant_class_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.cnv_call_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.ref_residue_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.transcript_exon_col): 1,
+            '%s.%s' % (kn.mutation_list_col, kn.sv_comment_col): 1,
+        }
+        self.standard_genomic_cnv_proj = {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            '%s.%s' % (kn.cnv_list_col, kn.hugo_symbol_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.protein_change_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.variant_class_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.cnv_call_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.ref_residue_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.transcript_exon_col): 1,
+            '%s.%s' % (kn.cnv_list_col, kn.sv_comment_col): 1,
+        }
+        self.standard_genomic_sv_proj = {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            '%s.%s' % (kn.sv_list_col, kn.hugo_symbol_col): 1,
+            '%s.%s' % (kn.sv_list_col, kn.protein_change_col): 1,
+            '%s.%s' % (kn.sv_list_col, kn.variant_class_col): 1,
+            '%s.%s' % (kn.sv_list_col, kn.cnv_call_col): 1,
+            '%s.%s' % (kn.sv_list_col, kn.ref_residue_col): 1,
+            '%s.%s' % (kn.sv_list_col, kn.transcript_exon_col): 1,
+            '%s.%s' % (kn.sv_list_col, kn.sv_comment_col): 1,
+        }
+        self.standard_genomic_wt_proj = {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            '%s.%s' % (kn.wt_genes_col, kn.hugo_symbol_col): 1,
+            '%s.%s' % (kn.wt_genes_col, kn.protein_change_col): 1,
+            '%s.%s' % (kn.wt_genes_col, kn.variant_class_col): 1,
+            '%s.%s' % (kn.wt_genes_col, kn.cnv_call_col): 1,
+            '%s.%s' % (kn.wt_genes_col, kn.ref_residue_col): 1,
+            '%s.%s' % (kn.wt_genes_col, kn.transcript_exon_col): 1,
+            '%s.%s' % (kn.wt_genes_col, kn.sv_comment_col): 1,
+        }
+
     def tearDown(self):
         pass
 
@@ -107,19 +148,11 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
         self.a._parse_gene_level(node=node)
         assert 'query' in node
         assert 'genomic_inclusion_reasons' in node
-        assert node['genomic_inclusion_reasons'] == {
-            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
-            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 1,
-            '%s.%s' % (kn.mutation_list_col, kn.protein_change_col): 1,
-            '%s.%s' % (kn.mutation_list_col, kn.variant_class_col): 1,
-            '%s.%s' % (kn.mutation_list_col, kn.cnv_call_col): 1,
-            '%s.%s' % (kn.mutation_list_col, kn.ref_residue_col): 1,
-        }
+        assert node['genomic_inclusion_reasons'] == self.standard_genomic_mut_proj
         assert node['variant_level'] == 'gene'
         assert node['unwind'] == '$%s' % kn.mutation_list_col
         assert node['match_reason'] == {'%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF'}
         assert node['include'] is True
-        return
 
         # exclusive mutation
         node = {'value': {
@@ -134,8 +167,9 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
             kn.hugo_symbol_col: 'BRAF'
         }
         assert node['variant_level'] == 'gene'
+        assert node['include'] is False
 
-        # exclusive cnv
+        # inclusive cnv
         node = {'value': {
             s.mt_variant_category: s.mt_cnv_val,
             s.mt_hugo_symbol: 'BRAF'}
@@ -143,8 +177,11 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
         self.a._parse_gene_level(node=node)
         assert 'query' in node
         assert 'genomic_inclusion_reasons' in node
-        assert node['genomic_inclusion_reasons'][kn.cnv_list_col] == node['query'][kn.cnv_list_col]
+        assert node['genomic_inclusion_reasons'] == self.standard_genomic_cnv_proj
         assert node['variant_level'] == 'gene'
+        assert node['unwind'] == '$%s' % kn.cnv_list_col
+        assert node['match_reason'] == {'%s.%s' % (kn.cnv_list_col, kn.hugo_symbol_col): 'BRAF'}
+        assert node['include'] is True
 
         # exclusive cnv
         node = {'value': {
@@ -159,6 +196,7 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
             kn.hugo_symbol_col: 'BRAF'
         }, node[kn.genomic_exclusion_reasons_col]
         assert node['variant_level'] == 'gene'
+        assert node['include'] is False
 
         # inclusive sv
         node = {'value': {
@@ -168,8 +206,13 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
         self.a._parse_gene_level(node=node)
         assert 'query' in node
         assert 'genomic_inclusion_reasons' in node
-        assert node['genomic_inclusion_reasons'][kn.sv_list_col] == node['query'][kn.sv_list_col]
+        assert node['genomic_inclusion_reasons'] == self.standard_genomic_sv_proj
         assert node['variant_level'] == 'gene'
+        assert node['unwind'] == '$%s' % kn.sv_list_col
+        assert node['match_reason'] == {
+            '%s.%s' % (kn.sv_list_col, kn.sv_comment_col): node['query'][kn.sv_list_col]['$elemMatch'][kn.sv_comment_col]
+        }
+        assert node['include'] is True
 
         # exclusive sv
         node = {'value': {
@@ -184,36 +227,59 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
             kn.hugo_symbol_col: 'BRAF'
         }
         assert node['variant_level'] == 'gene'
+        assert node['include'] is False
 
-        # inclusive any variant
-        node = {'value': {
-            s.mt_variant_category: s.mt_any_vc_val,
-            s.mt_hugo_symbol: 'BRAF'}
-        }
-        self.a._parse_gene_level(node=node)
-        assert 'query' in node
-        assert 'genomic_inclusion_reasons' in node
-        assert node['genomic_inclusion_reasons']['$or'][0][kn.mutation_list_col] == \
-            node['query']['$or'][0][kn.mutation_list_col]
-        assert node['genomic_inclusion_reasons']['$or'][1][kn.cnv_list_col] == \
-            node['query']['$or'][1][kn.cnv_list_col]
-        assert node['variant_level'] == 'gene'
-
-        # exclusive sv
-        node = {'value': {
-            s.mt_variant_category: '!%s' % s.mt_any_vc_val,
-            s.mt_hugo_symbol: 'BRAF'}
-        }
-        self.a._parse_gene_level(node=node)
-        assert 'query' in node
-        assert kn.genomic_exclusion_reasons_col in node
-        assert node[kn.genomic_exclusion_reasons_col] == {
-            '$and': [
-                {kn.variant_category_col: s.variant_category_mutation_val, kn.hugo_symbol_col: 'BRAF'},
-                {kn.variant_category_col: s.variant_category_cnv_val, kn.hugo_symbol_col: 'BRAF'}
-            ]
-        }
-        assert node['variant_level'] == 'gene'
+        # todo enable
+        # # inclusive any variant
+        # node = {'value': {
+        #     s.mt_variant_category: s.mt_any_vc_val,
+        #     s.mt_hugo_symbol: 'BRAF'}
+        # }
+        # self.a._parse_gene_level(node=node)
+        # assert 'query' in node
+        # assert 'genomic_inclusion_reasons' in node
+        # print node['genomic_inclusion_reasons']
+        # assert node['genomic_inclusion_reasons'] == {
+        #     '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+        #     '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 1,
+        #     '%s.%s' % (kn.mutation_list_col, kn.protein_change_col): 1,
+        #     '%s.%s' % (kn.mutation_list_col, kn.variant_class_col): 1,
+        #     '%s.%s' % (kn.mutation_list_col, kn.cnv_call_col): 1,
+        #     '%s.%s' % (kn.mutation_list_col, kn.ref_residue_col): 1,
+        #     '%s.%s' % (kn.mutation_list_col, kn.transcript_exon_col): 1,
+        #     '%s.%s' % (kn.mutation_list_col, kn.sv_comment_col): 1,
+        #     '%s.%s' % (kn.cnv_list_col, kn.hugo_symbol_col): 1,
+        #     '%s.%s' % (kn.cnv_list_col, kn.protein_change_col): 1,
+        #     '%s.%s' % (kn.cnv_list_col, kn.variant_class_col): 1,
+        #     '%s.%s' % (kn.cnv_list_col, kn.cnv_call_col): 1,
+        #     '%s.%s' % (kn.cnv_list_col, kn.ref_residue_col): 1,
+        #     '%s.%s' % (kn.cnv_list_col, kn.sv_comment_col): 1,
+        #     '%s.%s' % (kn.cnv_list_col, kn.transcript_exon_col): 1,
+        # }
+        # assert node['variant_level'] == 'gene'
+        # assert node['unwind'] == '$%s' % kn.mutation_list_col  # todo bad
+        # assert node['match_reason'] == {
+        #     '$or': [
+        #         {'%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF'},
+        #         {'%s.%s' % (kn.cnv_list_col, kn.hugo_symbol_col): 'BRAF'}
+        #     ]
+        # }
+        #
+        # # exclusive any variant
+        # node = {'value': {
+        #     s.mt_variant_category: '!%s' % s.mt_any_vc_val,
+        #     s.mt_hugo_symbol: 'BRAF'}
+        # }
+        # self.a._parse_gene_level(node=node)
+        # assert 'query' in node
+        # assert kn.genomic_exclusion_reasons_col in node
+        # assert node[kn.genomic_exclusion_reasons_col] == {
+        #     '$and': [
+        #         {kn.variant_category_col: s.variant_category_mutation_val, kn.hugo_symbol_col: 'BRAF'},
+        #         {kn.variant_category_col: s.variant_category_cnv_val, kn.hugo_symbol_col: 'BRAF'}
+        #     ]
+        # }
+        # assert node['variant_level'] == 'gene'
 
     def test_parse_sv(self):
 
@@ -225,8 +291,14 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
         self.a._parse_gene_level(node=node)
         assert 'query' in node
         assert 'genomic_inclusion_reasons' in node
-        assert node['genomic_inclusion_reasons'][kn.sv_list_col] == node['query'][kn.sv_list_col]
+        assert node['genomic_inclusion_reasons'] == self.standard_genomic_sv_proj
         assert node['variant_level'] == 'gene'
+        assert node['unwind'] == '$%s' % kn.sv_list_col
+        assert node['match_reason'] == {
+            '%s.%s' % (kn.sv_list_col, kn.sv_comment_col): node['query'][kn.sv_list_col]['$elemMatch'][
+                kn.sv_comment_col]
+        }
+        assert node['include'] is True
 
         # exclusive sv
         node = {'value': {
@@ -241,6 +313,7 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
             kn.hugo_symbol_col: 'BRAF'
         }
         assert node['variant_level'] == 'gene'
+        assert node['include'] is False
 
     def test_parse_variant_level(self):
 
@@ -253,8 +326,14 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
         self.a._parse_variant_level(node=node)
         assert 'query' in node
         assert 'genomic_inclusion_reasons' in node
-        assert node['genomic_inclusion_reasons'][kn.mutation_list_col] == node['query'][kn.mutation_list_col]
+        assert node['genomic_inclusion_reasons'] == self.standard_genomic_mut_proj
         assert node['variant_level'] == 'variant'
+        assert node['unwind'] == '$%s' % kn.mutation_list_col
+        assert node['match_reason'] == {
+            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF',
+            '%s.%s' % (kn.mutation_list_col, kn.protein_change_col): 'p.V600E'
+        }
+        assert node['include'] is True
 
         # exclusive sv
         node = {'value': {
@@ -271,6 +350,7 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
             kn.protein_change_col: 'p.V600E'
         }, node[kn.genomic_exclusion_reasons_col]
         assert node['variant_level'] == 'variant'
+        assert node['include'] is False
 
     def test_parse_wildcard_level(self):
 
@@ -283,8 +363,14 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
         self.a._parse_wildcard_level(node=node)
         assert 'query' in node
         assert 'genomic_inclusion_reasons' in node
-        assert node['genomic_inclusion_reasons'][kn.mutation_list_col] == node['query'][kn.mutation_list_col]
+        assert node['genomic_inclusion_reasons'] == self.standard_genomic_mut_proj
         assert node['variant_level'] == 'wildcard'
+        assert node['unwind'] == '$%s' % kn.mutation_list_col
+        assert node['match_reason'] == {
+            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF',
+            '%s.%s' % (kn.mutation_list_col, kn.ref_residue_col): 'p.V600'
+        }
+        assert node['include'] is True
 
         # exclusive sv
         node = {'value': {
@@ -301,6 +387,7 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
             kn.ref_residue_col: 'p.V600'
         }, node[kn.genomic_exclusion_reasons_col]
         assert node['variant_level'] == 'wildcard'
+        assert node['include'] is False
 
     def test_parse_exon_level(self):
 
@@ -313,8 +400,14 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
         self.a._parse_exon_level(node=node)
         assert 'query' in node
         assert 'genomic_inclusion_reasons' in node
-        assert node['genomic_inclusion_reasons'][kn.mutation_list_col] == node['query'][kn.mutation_list_col]
+        assert node['genomic_inclusion_reasons'] == self.standard_genomic_mut_proj
         assert node['variant_level'] == 'exon'
+        assert node['unwind'] == '$%s' % kn.mutation_list_col
+        assert node['match_reason'] == {
+            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF',
+            '%s.%s' % (kn.mutation_list_col, kn.transcript_exon_col): 20
+        }
+        assert node['include'] is True
 
         # exclusive sv
         node = {'value': {
@@ -331,6 +424,7 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
             kn.transcript_exon_col: 20
         }, node[kn.genomic_exclusion_reasons_col]
         assert node['variant_level'] == 'exon'
+        assert node['include'] is False
 
     def test_parse_variant_class_level(self):
 
@@ -343,8 +437,14 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
         self.a._parse_variant_class_level(node=node)
         assert 'query' in node
         assert 'genomic_inclusion_reasons' in node
-        assert node['genomic_inclusion_reasons'][kn.mutation_list_col] == node['query'][kn.mutation_list_col]
+        assert node['genomic_inclusion_reasons'] == self.standard_genomic_mut_proj
         assert node['variant_level'] == 'variant_class'
+        assert node['unwind'] == '$%s' % kn.mutation_list_col
+        assert node['match_reason'] == {
+            '%s.%s' % (kn.mutation_list_col, kn.hugo_symbol_col): 'BRAF',
+            '%s.%s' % (kn.mutation_list_col, kn.variant_class_col): 'Nonsense_Mutation'
+        }
+        assert node['include'] is True
 
         # exclusive sv
         node = {'value': {
@@ -361,6 +461,7 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
             kn.variant_class_col: 'Nonsense_Mutation'
         }, node[kn.genomic_exclusion_reasons_col]
         assert node['variant_level'] == 'variant_class'
+        assert node['include'] is False
 
     def test_parse_cnv_call(self):
 
@@ -373,8 +474,14 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
         self.a._parse_cnv_call(node=node)
         assert 'query' in node
         assert 'genomic_inclusion_reasons' in node
-        assert node['genomic_inclusion_reasons'][kn.cnv_list_col] == node['query'][kn.cnv_list_col]
+        assert node['genomic_inclusion_reasons'] == self.standard_genomic_cnv_proj
         assert node['variant_level'] == 'variant'
+        assert node['unwind'] == '$%s' % kn.cnv_list_col
+        assert node['match_reason'] == {
+            '%s.%s' % (kn.cnv_list_col, kn.hugo_symbol_col): 'BRAF',
+            '%s.%s' % (kn.cnv_list_col, kn.cnv_call_col): s.cnv_call_hetero_del
+        }
+        assert node['include'] is True
 
         # exclusive sv
         node = {'value': {
@@ -391,6 +498,7 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
             kn.cnv_call_col: s.cnv_call_hetero_del
         }, node[kn.genomic_exclusion_reasons_col]
         assert node['variant_level'] == 'variant'
+        assert node['include'] is False
 
     def test_parse_signature(self):
 
@@ -398,47 +506,80 @@ class TestAssessNodeUtils(TestQueryUtilitiesShared):
         node = {'value': {s.mt_mmr_status: s.mt_mmr_deficient_val}}
         self.a._parse_signature(node=node, criteria=[s.mt_mmr_status])
         assert node['query'] == {kn.mmr_status_col: s.mmr_status_deficient_val}
-        assert node['genomic_inclusion_reasons'][kn.mmr_status_col] == s.mmr_status_deficient_val
+        assert node['genomic_inclusion_reasons'] == {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            kn.mmr_status_col: 1
+        }
+        assert node['match_reason'][kn.mmr_status_col] == s.mmr_status_deficient_val
 
         # MS Status
         node = {'value': {s.mt_ms_status: s.mt_msi_high_val}}
         self.a._parse_signature(node=node, criteria=[s.mt_ms_status])
         assert node['query'] == {kn.ms_status_col: s.ms_status_msih_val}
-        assert node['genomic_inclusion_reasons'][kn.ms_status_col] == s.ms_status_msih_val
+        assert node['genomic_inclusion_reasons'] == {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            kn.ms_status_col: 1
+        }
+        assert node['match_reason'][kn.ms_status_col] == s.mt_msi_high_val
 
         # Tobacco Status
         node = {'value': {s.mt_tobacco_status: 'Yes'}}
         self.a._parse_signature(node=node, criteria=[s.mt_tobacco_status])
         assert node['query'] == {kn.tobacco_status_col: 'Yes'}
-        assert node['genomic_inclusion_reasons'][kn.tobacco_status_col] == 'Yes'
+        assert node['genomic_inclusion_reasons'] == {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            kn.tobacco_status_col: 1
+        }
+        assert node['match_reason'][kn.tobacco_status_col] == 'Yes'
 
         # TMZ Status
         node = {'value': {s.mt_tmz_status: 'Yes'}}
         self.a._parse_signature(node=node, criteria=[s.mt_tmz_status])
         assert node['query'] == {kn.tmz_status_col: 'Yes'}
-        assert node['genomic_inclusion_reasons'][kn.tmz_status_col] == 'Yes'
+        assert node['genomic_inclusion_reasons'] == {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            kn.tmz_status_col: 1
+        }
+        assert node['match_reason'][kn.tmz_status_col] == 'Yes'
 
         # polE Status
         node = {'value': {s.mt_pole_status: 'Yes'}}
         self.a._parse_signature(node=node, criteria=[s.mt_pole_status])
         assert node['query'] == {kn.pole_status_col: 'Yes'}
-        assert node['genomic_inclusion_reasons'][kn.pole_status_col] == 'Yes'
+        assert node['genomic_inclusion_reasons'] == {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            kn.pole_status_col: 1
+        }
+        assert node['match_reason'][kn.pole_status_col] == 'Yes'
 
         # APOBEC Status
         node = {'value': {s.mt_apobec_status: 'Yes'}}
         self.a._parse_signature(node=node, criteria=[s.mt_apobec_status])
         assert node['query'] == {kn.apobec_status_col: 'Yes'}
-        assert node['genomic_inclusion_reasons'][kn.apobec_status_col] == 'Yes'
+        assert node['genomic_inclusion_reasons'] == {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            kn.apobec_status_col: 1
+        }
+        assert node['match_reason'][kn.apobec_status_col] == 'Yes'
 
         # UVA Status
         node = {'value': {s.mt_uva_status: 'Yes'}}
         self.a._parse_signature(node=node, criteria=[s.mt_uva_status])
         assert node['query'] == {kn.uva_status_col: 'Yes'}
-        assert node['genomic_inclusion_reasons'][kn.uva_status_col] == 'Yes'
+        assert node['genomic_inclusion_reasons'] == {
+            '_id': 0, kn.sample_id_col: 1, kn.mrn_col: 1, kn.vital_status_col: 1,
+            kn.uva_status_col: 1
+        }
+        assert node['match_reason'][kn.uva_status_col] == 'Yes'
 
     def test_parse_wildtype(self):
 
         node = {'value': {s.mt_hugo_symbol: 'BRAF', s.mt_wildtype: True}}
         self.a._parse_wildtype(node=node)
         assert node['query'] == {kn.wt_genes_col: {'$elemMatch': {kn.hugo_symbol_col: 'BRAF'}}}
-        assert node['genomic_inclusion_reasons'][kn.wt_genes_col] == node['query'][kn.wt_genes_col]
+        assert node['genomic_inclusion_reasons'] == self.standard_genomic_wt_proj
+        assert node['unwind'] == '$%s' % kn.wt_genes_col
+        assert node['match_reason'] == {
+            '%s.%s' % (kn.wt_genes_col, kn.hugo_symbol_col): 'BRAF'
+        }
+        assert node['include'] is True

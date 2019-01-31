@@ -115,7 +115,7 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
                 for k, v in p.iteritems():
                     proj[k] = v
 
-        elif variant_category in [kn.mmr_status_col, kn.ms_status_col]:
+        elif variant_category in kn.all_signatures:
             match_reason = {variant_category: kwargs['query'][variant_category]}
             proj = {variant_category: 1}
         else:
@@ -124,7 +124,7 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
             }
 
             proj_keys = [kn.hugo_symbol_col, kn.protein_change_col, kn.variant_class_col, kn.cnv_call_col,
-                         kn.ref_residue_col, kn.transcript_exon_col]
+                         kn.ref_residue_col, kn.transcript_exon_col, kn.sv_comment_col]
             proj = {
                 '%s.%s' % (variant_category, k): 1 for k in proj_keys
             }
@@ -164,6 +164,7 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
         :param query: {dict or null}
         :return: {dict}
         """
+        # todo enable
         any_variant_dict = {True: self.create_genomic_proj, False: self.create_any_variant_exclusion_proj}
         return any_variant_dict[include](include=include, gene_name=gene_name, query=query)
 
@@ -174,6 +175,7 @@ class ProjUtils(ClinicalUtils, GenomicUtils):
         :param gene_name: {str}
         :return: {dict}
         """
+        # todo enable
         mutation_proj = self.create_genomic_exclusion_proj(keys=[kn.mutation_list_col, kn.hugo_symbol_col],
                                                            vals=[s.variant_category_mutation_val, gene_name])
         cnv_proj = self.create_genomic_exclusion_proj(keys=[kn.cnv_list_col, kn.hugo_symbol_col],

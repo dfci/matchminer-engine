@@ -160,6 +160,10 @@ tmz_status_col = 'tmzStatus'
 pole_status_col = 'polEStatus'
 apobec_status_col = 'apobecStatus'
 uva_status_col = 'uvaStatus'
+all_signatures = [
+    mmr_status_col, ms_status_col, tobacco_status_col, tmz_status_col, pole_status_col, apobec_status_col,
+    uva_status_col
+]
 
 # ----------------------- #
 # Trial matches key names #

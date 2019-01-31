@@ -86,3 +86,16 @@ def normalize_signature_vals(signature_type, signature_val):
         signature_val_dict[val] = val
 
     return signature_type_dict[signature_type], signature_val_dict[signature_val]
+
+
+def add_unwind(node, include):
+    """
+    Adds the unwind command for the aggregation pipeline for the given digraph node.
+
+    :param node: {Directed graph node}
+    :param include: {bool}
+    :return: {null}
+    """
+    node['unwind'] = '$%s' % node['match_reason'].keys()[0].split('.')[0] \
+        if 'match_reason' in node and node['match_reason'] is not None else None
+    node['include'] = include
