@@ -380,7 +380,7 @@ class AssessNodeUtils(ClinicalQueries, GenomicQueries, ProjUtils):
         :return: {digraph node}
         """
         # parse node
-        node['variant_level'] = 'variant'
+        node['variant_level'] = 'gene'  # todo: this assignment is to ensure consistency with the original matchengine. revisit this logic. 
         gene_name = node['value'][s.mt_hugo_symbol]
         variant_category, include = self._parse_variant_category(node=node)
         cnv_call = me_utils.normalize_cnv_call_val(me_utils.sanitize_exclusion_vals(node['value'][s.mt_cnv_call]))
