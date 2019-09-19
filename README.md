@@ -1,3 +1,6 @@
+## NOTE
+This version of the MatchEngine is deprecated and no longer supported. Please see [MatchEngineV2](https://github.com/dfci/matchengine-V2).
+
 # MatchEngine
 The matchengine matches patient clinical and genomic information to trials. 
 
