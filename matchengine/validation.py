@@ -47,12 +47,12 @@ class ConsentValidatorCerberus(Validator):
         if not normalize_table:
             return
 
-        for key, val in value.iteritems():
-            if (isinstance(val, str) or isinstance(val, unicode)) and val[0] == "!":
+        for key, val in list(value.items()):
+            if (isinstance(val, str) or isinstance(val, str)) and val[0] == "!":
                 val = val[1:]
 
             if key == 'oncotree_primary_diagnosis':
-                if val not in normalize_table['values']['oncotree_primary_diagnosis'].values():
+                if val not in list(normalize_table['values']['oncotree_primary_diagnosis'].values()):
                     self._error(field, "%s is not a valid value for oncotree_primary_diagnosis" % val)
 
             elif key == 'hugo_symbol':

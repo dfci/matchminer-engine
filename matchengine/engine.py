@@ -93,7 +93,7 @@ class MatchEngine(object):
 
         # create collection
         mapping = []
-        for old_key, new_key in key_map.iteritems():
+        for old_key, new_key in list(key_map.items()):
             item = {
                 'key_old': old_key,
                 'key_new': new_key
@@ -163,7 +163,7 @@ class MatchEngine(object):
         :return: diGraph match tree
         """
 
-        key = data.keys()[0]
+        key = list(data.keys())[0]
         value = data[key]
         global_node = 1
         g = nx.DiGraph()
@@ -184,7 +184,7 @@ class MatchEngine(object):
             elif isinstance(value, list):
                 for i in range(0, len(value)):
                     global_node += 1
-                    s.append([node, global_node, value[i].keys()[0], value[i][value[i].keys()[0]]])
+                    s.append([node, global_node, list(value[i].keys())[0], value[i][list(value[i].keys())[0]]])
         g.remove_node(0)
         return g
 
@@ -244,12 +244,12 @@ class MatchEngine(object):
             g, neg, sv = self.prepare_genomic_criteria(item)
 
             # execute match
-            if len(g.keys()) == 0:
+            if len(list(g.keys())) == 0:
                 matched_sample_ids = list()
             else:
 
                 if neg:
-                    proj = {'SAMPLE_ID': 1}     # speeds up query
+                    proj = {'SAMPLE_ID': 1}  # speeds up query
                 else:
                     proj = {
                         'SAMPLE_ID': 1,
@@ -284,7 +284,7 @@ class MatchEngine(object):
                 if neg:
 
                     # If the yaml criterium was negative, then subtract the matched results from the total set
-                    matched_sample_ids = self.all_match - set(x['SAMPLE_ID']for x in results)
+                    matched_sample_ids = self.all_match - set(x['SAMPLE_ID'] for x in results)
                     alteration, is_variant = format_not_match(g)
 
                     # add genomic alterations per sample id
@@ -328,7 +328,7 @@ class MatchEngine(object):
             c = self.prepare_clinical_criteria(item)
 
             # execute match
-            if len(c.keys()) == 0:
+            if len(list(c.keys())) == 0:
                 matched_sample_ids = list()
             else:
                 matched_sample_ids = set(self.db.clinical.find(c).distinct('SAMPLE_ID'))
@@ -405,12 +405,11 @@ class MatchEngine(object):
         map_keys = ["oncotree_primary_diagnosis", "age_numerical", "gender"]
 
         # all other keys are ignored when matching
-        for key in item.keys():
+        for key in list(item.keys()):
             if key.lower() not in map_keys:
                 del item[key]
 
         for field in item:
-
             # this maps yaml field names to those stored in the database through the database collection "map"
             norm_field, _ = normalize_fields(self.mapping, field)
             txt = item[field]
@@ -446,7 +445,7 @@ class MatchEngine(object):
                     "variant_classification", "exon", "cnv_call", "wildtype", "mmr_status", "ms_status"]
 
         # all other keys are ignored when matching
-        for key in item.keys():
+        for key in list(item.keys()):
             if key.lower() not in map_keys:
                 del item[key]
 
@@ -454,7 +453,7 @@ class MatchEngine(object):
             if key.lower() == 'wildtype':
                 wildtype = True
 
-        for field, val in item.iteritems():
+        for field, val in list(item.items()):
 
             # this maps the yaml field names to those stored in the database through the database collection "map"
             norm_field, norm_val = normalize_values(self.mapping, field, val)
@@ -530,7 +529,8 @@ class MatchEngine(object):
                     # DOSE #
                     for dose in arm['dose_level']:
                         if 'match' in dose:
-                            trial_matches = self._assess_match(mrn_map, trial_matches, trial, dose, 'dose', trial_status)
+                            trial_matches = self._assess_match(mrn_map, trial_matches, trial, dose, 'dose',
+                                                               trial_status)
 
         trial_match_df = pd.DataFrame.from_dict(trial_matches)
 
@@ -568,16 +568,16 @@ class MatchEngine(object):
         clinical = []
         if sample_ids:
             cproj = {
-                    'SAMPLE_ID': 1,
-                    'ORD_PHYSICIAN_NAME': 1,
-                    'ORD_PHYSICIAN_EMAIL': 1,
-                    'ONCOTREE_PRIMARY_DIAGNOSIS_NAME': 1,
-                    'REPORT_DATE': 1,
-                    'VITAL_STATUS': 1,
-                    'FIRST_LAST': 1,
-                    'GENDER': 1,
-                    '_id': 1
-                }
+                'SAMPLE_ID': 1,
+                'ORD_PHYSICIAN_NAME': 1,
+                'ORD_PHYSICIAN_EMAIL': 1,
+                'ONCOTREE_PRIMARY_DIAGNOSIS_NAME': 1,
+                'REPORT_DATE': 1,
+                'VITAL_STATUS': 1,
+                'FIRST_LAST': 1,
+                'GENDER': 1,
+                '_id': 1
+            }
             clinical = list(self.db.clinical.find({'SAMPLE_ID': {'$in': list(sample_ids)}}, cproj))
 
         # add to master list if any sample ids matched
@@ -594,7 +594,7 @@ class MatchEngine(object):
 
                 trial_keys = ['protocol_no', 'nct_id']
                 for trial_key in trial_keys:
-                    if trial_key in trial.keys():
+                    if trial_key in list(trial.keys()):
                         match[trial_key] = trial[trial_key]
 
                 # copy clinical document
@@ -633,7 +633,7 @@ class MatchEngine(object):
 
         nodes = []
         tmpc = {'ONCOTREE_PRIMARY_DIAGNOSIS_NAME': {}}
-        for key in c['ONCOTREE_PRIMARY_DIAGNOSIS_NAME'].keys():
+        for key in list(c['ONCOTREE_PRIMARY_DIAGNOSIS_NAME'].keys()):
 
             # loop through all diagnoses
             diagnoses = c['ONCOTREE_PRIMARY_DIAGNOSIS_NAME'][key]
@@ -710,13 +710,12 @@ class MatchEngine(object):
             G.add_edge(parent_id, cur_name)
 
         # Add all other key/value to node
-        for key, value in data.items():
+        for key, value in list(data.items()):
             if key in child_id_set:
                 G.node[cur_name]['node_id'] = value
             if key not in key_set:
                 # add the value.
                 G.node[cur_name][key] = value
-
 
         # Add children level nodes to tree recursively
         for key in data:

@@ -52,7 +52,7 @@ def build_gquery(field, txt):
         key = '$in'
 
     # Not equal to given value
-    elif (isinstance(txt, str) and txt.startswith('!')) or (isinstance(txt, unicode) and txt.startswith('!')):
+    elif (isinstance(txt, str) and txt.startswith('!')) or (isinstance(txt, str) and txt.startswith('!')):
         key = '$eq'
         neg = True
 
@@ -110,7 +110,7 @@ def normalize_fields(mapping, field):
     old_keys = [i['key_old'] for i in mapping]
     new_keys = [i['key_new'] for i in mapping]
     vals = [i['values'] for i in mapping]
-    val_map = dict(zip(new_keys, vals))
+    val_map = dict(list(zip(new_keys, vals)))
 
     # translate keys
     field = field.upper()
@@ -130,7 +130,7 @@ def normalize_values(mapping, field, val):
     # exclude "!" from mapping
     ne = False
     map_by = val
-    if (isinstance(val, str) and val[0] == "!") or (isinstance(val, unicode) and val[0] == "!"):
+    if (isinstance(val, str) and val[0] == "!") or (isinstance(val, str) and val[0] == "!"):
         map_by = val[1:]
         ne = True
 
@@ -269,7 +269,7 @@ def format_genomic_alteration(g, query):
     is_variant = 'gene'
 
     # Ignore wildtype when determining if match was gene- or variant-level
-    if query.keys()[0] == '$and':
+    if list(query.keys())[0] == '$and':
         query = query['$and'][0]
 
     # determine if match was gene- or variant-level
@@ -321,7 +321,7 @@ def format_not_match(g):
     sv = 'VARIANT_CATEGORY'
 
     # Ignore wildtype when formatting genomic alteration
-    if g.keys()[0] == '$and':
+    if list(g.keys())[0] == '$and':
         g = g['$and'][0]
 
     # add gene
@@ -342,7 +342,7 @@ def format_not_match(g):
         alteration += ' %s' % format_query(g[var])
 
     # add structural variation
-    elif sv in g and g[sv][g[sv].keys()[0]] == 'SV':
+    elif sv in g and g[sv][list(g[sv].keys())[0]] == 'SV':
         alteration += ' Structural Variation'
 
     # if no gene is specified, the ! is added manually
@@ -356,7 +356,7 @@ def format_query(g, gene=False):
     """Turns the mongo query into a formatted genomic alteration"""
 
     alteration = ''
-    key = g.keys()[0]
+    key = list(g.keys())[0]
 
     if key == '$regex':
         alteration += '!%s' % g[key].replace('^', '').replace('[A-Z]', '')
@@ -389,7 +389,7 @@ def add_matches(trial_matches_df, db):
     if len(trial_matches_df.index) > 0:
         db.trial_match.drop()
         for i in range(0, trial_matches_df.shape[0], 1000):
-            records = json.loads(trial_matches_df[i:i + 1000].T.to_json()).values()
+            records = list(json.loads(trial_matches_df[i:i + 1000].T.to_json()).values())
             db.trial_match.insert_many(records)
 
 
@@ -415,7 +415,7 @@ def get_db(uri):
             # pull values.
             with open(file_path) as fin:
                 vars = json.load(fin)
-                for name, value in vars.iteritems():
+                for name, value in list(vars.items()):
                     if name == "MONGO_URI":
                         MONGO_URI = value
 
@@ -437,7 +437,7 @@ def get_structural_variants(g):
 
     # get the genes.
     hugo = g['TRUE_HUGO_SYMBOL']
-    k = hugo.keys()[0]
+    k = list(hugo.keys())[0]
     genes = hugo[k]
 
     if not isinstance(genes, list):

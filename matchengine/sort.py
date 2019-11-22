@@ -33,7 +33,7 @@ def add_sort_order(trial_match_df):
     for sample_id in all_sample_ids:
         f4 = (trial_match_df['sample_id'] == sample_id)
         df = trial_match_df[f1 & f2 & f3 & f4]
-        matches = df.T.to_dict().values()
+        matches = list(df.T.to_dict().values())
 
         # The sort order dictionary keeps track of the priority for each sort category for each match
         # Index 0 is sorted by tier with values 0 to 7
@@ -210,7 +210,7 @@ def sort_by_reverse_protocol_no(matches, sort_order):
 def final_sort(sort_order, master_sort_order):
 
     cols = ['tier', 'match_type', 'cancer_type', 'coordinating_center', 'rev_protocol_no']
-    sort_order_df = pd.DataFrame(sort_order.values(), columns=cols, index=sort_order.keys())
+    sort_order_df = pd.DataFrame(list(sort_order.values()), columns=cols, index=list(sort_order.keys()))
     sort_order_df.sort_values(by=cols, axis=0, ascending=True, inplace=True)
 
     j = 0
